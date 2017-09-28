@@ -17,6 +17,11 @@ public class Request
     public string Url;
 
     /// <summary>
+    /// The Request mimes. (e.g. text/html, image/*)
+    /// </summary>
+    public string[] mimes;
+
+    /// <summary>
     /// Request Constructor.
     /// </summary>
     /// <param name="data">The incomed data.</param>
@@ -49,8 +54,11 @@ public class Request
             words = joinedArrays;
         }
 
-        if(words.Length > 1)
+        if (words.Length > 1)
+        {
+            Console.WriteLine("\nREQUEST:");
             Console.WriteLine(data);
+        }
         return words;
     }
 
@@ -109,6 +117,27 @@ public class Request
         {
             Url = "/" + Url;
         }
+
+        int acceptMimesWord = 0;
+        int lastMime = 0;
+
+        for(int x = 0; x < words.Length; x++)
+        {
+            if (words[x] == "Accept:")
+            {
+                acceptMimesWord = x;
+                break;
+            }
+        }
+
+        mimes = words[acceptMimesWord + 1].Split(',');
+
+        Console.WriteLine("Mimes:");
+
+        foreach(string mime in mimes)
+            Console.WriteLine(mime);
+
+        Console.WriteLine("");
     }
 }
 

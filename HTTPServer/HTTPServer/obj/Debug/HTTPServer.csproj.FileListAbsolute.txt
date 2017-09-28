@@ -4,3 +4,9 @@ c:\users\beto\documents\visual studio 2015\Projects\HTTPServer\HTTPServer\bin\De
 c:\users\beto\documents\visual studio 2015\Projects\HTTPServer\HTTPServer\obj\Debug\HTTPServer.exe
 c:\users\beto\documents\visual studio 2015\Projects\HTTPServer\HTTPServer\obj\Debug\HTTPServer.pdb
 C:\Users\Beto\Documents\Visual Studio 2015\Projects\HTTPServer\HTTPServer\obj\Debug\HTTPServer.csprojResolveAssemblyReference.cache
+D:\Users\Alberto\Desktop\HTTP Socket Server\HTTPServer\HTTPServer\bin\Debug\HTTPServer.exe.config
+D:\Users\Alberto\Desktop\HTTP Socket Server\HTTPServer\HTTPServer\obj\Debug\HTTPServer.exe
+D:\Users\Alberto\Desktop\HTTP Socket Server\HTTPServer\HTTPServer\obj\Debug\HTTPServer.pdb
+D:\Users\Alberto\Desktop\HTTP Socket Server\HTTPServer\HTTPServer\bin\Debug\HTTPServer.exe
+D:\Users\Alberto\Desktop\HTTP Socket Server\HTTPServer\HTTPServer\bin\Debug\HTTPServer.pdb
+D:\Users\Alberto\Desktop\HTTP Socket Server\HTTPServer\HTTPServer\obj\Debug\HTTPServer.csprojResolveAssemblyReference.cache

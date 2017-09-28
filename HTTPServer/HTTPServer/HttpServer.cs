@@ -10,11 +10,8 @@ public class HttpServer
     public const string MSG_D = "/root/msg";
     public const string WEB_D = "/root/web";
 
-    // Data buffer for incoming data.
-    byte[] bytes;
-
     Socket handler;
-    bool threadsInStandby = false;
+    bool ResponseSent = false;
 
     IPHostEntry ipHostInfo;
     IPAddress ipAddress;
@@ -57,6 +54,8 @@ public class HttpServer
         Console.WriteLine("Server IP Adress: " + ipAddress);
         Console.WriteLine("Server Port: " + port);
 
+        Console.WriteLine("\n________________________________________\n\n");
+
         ContinueListening();
     }
 
@@ -64,25 +63,29 @@ public class HttpServer
     {
         try
         {
-            read = new Thread(ReadThread);
-            read.IsBackground = false;
-
             data = null;
 
+            read = new Thread(ReadThread);
+            read.IsBackground = false;
             read.Start();
 
             while (true)
             {
-                threadsInStandby = false;
                 Console.WriteLine("Waiting for a connection... \n");
+
+                ResponseSent = false;
                 handler = listener.Accept();
 
-                while (!threadsInStandby)
-                    Thread.Sleep(1);
+                while (true)
+                {
+                    if (ResponseSent)
+                    {
+                        Thread.Sleep(500);
 
-                handler.Shutdown(SocketShutdown.Both);
-                handler.Close();
-                handler = null;
+
+                        break;
+                    }
+                }
             }
         }
         catch (Exception e)
@@ -98,7 +101,8 @@ public class HttpServer
             if (handler == null || !handler.Connected)
                 continue;
 
-            bytes = new byte[1024];
+            // Data buffer for incoming data.
+            byte[] bytes = new byte[1024];
 
             int a = handler.Receive(bytes);
             data = Encoding.UTF8.GetString(bytes, 0, a);
@@ -106,9 +110,11 @@ public class HttpServer
             Request request = new Request(data);
             Response response = new Response(request);
             response.Post(handler);
+            ResponseSent = true;
 
-            while (threadsInStandby || handler == null)
-                Thread.Sleep(1);
+            handler.Shutdown(SocketShutdown.Both);
+            handler.Close();
+            handler = null;
         }
     }
 }

@@ -47,12 +47,12 @@ public class Response
             case RequestType.GET:
 
                 string file = Environment.CurrentDirectory + HttpServer.WEB_D + request.Url;
-                Console.WriteLine(file);
+                Console.WriteLine("Requested File: " + file);
 
                 if (File.Exists(file))
                     Console.WriteLine("Specified file exists.");
 
-                bytedata = Encoding.UTF8.GetBytes(File.ReadAllText(file));
+                bytedata = File.ReadAllBytes(file);
 
                 Console.WriteLine("Bytes gotten from file.");
 
@@ -72,13 +72,16 @@ public class Response
         NetworkStream stream = new NetworkStream(handler);
         StreamWriter writer = new StreamWriter(stream);
 
-        writer.WriteLine(String.Format("{0} {1}\r\nServer: {2}\r\nContent-Type: {3}\r\nAccept-Ranges: bytes\r\nContent-Length: {4}\r\n",
-            "HTTP / 1.1", "200", "BetoServer", "text/html", bytedata.Length));
+        string Header = String.Format("{0} {1}\r\nServer: {2}\r\nContent-Type: {3}\r\nAccept-Ranges: bytes\r\nContent-Length: {4}\r\n",
+            "HTTP / 1.1", "200", "BetoServer", request.mimes[0], bytedata.Length);
+
+        writer.WriteLine(Header);
 
         writer.Flush();
         stream.Write(bytedata, 0, bytedata.Length);
         stream.Close();
 
-        Console.WriteLine("Bytes sent to client.");
+        Console.WriteLine("\nRESPONSE:\n" + Header + "\nBytes sent to client.");
+        Console.WriteLine("\n________________________________________\n\n");
     }
 }
