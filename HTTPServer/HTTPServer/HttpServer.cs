@@ -7,24 +7,22 @@ using System.IO;
 
 public class HttpServer
 {
+    public const string SERVER_NAME = "BetoServer";
+    public const string VERSION = "HTTP / 1.1";
+
     public const string MSG_D = "/root/msg";
     public const string WEB_D = "/root/web";
 
+    public IPAddress ipAddress { get; private set; }
+
+    public int port { get; private set; }
+
     Socket handler;
-    bool ResponseSent = false;
-
-    IPHostEntry ipHostInfo;
-    IPAddress ipAddress;
-    int port;
-    IPEndPoint localEndPoint;
-    Socket listener;
-
-    // Incoming data from the client.
-    public static string data = null;
 
     Thread read;
 
     bool running = false;
+    bool responseSent = false;
 
     public HttpServer(int port)
     {
@@ -39,13 +37,13 @@ public class HttpServer
 
     void StartListening()
     {
-        ipHostInfo = Dns.Resolve(Dns.GetHostName());
+        IPHostEntry ipHostInfo = Dns.Resolve(Dns.GetHostName());
         ipAddress = ipHostInfo.AddressList[0];
 
-        localEndPoint = new IPEndPoint(ipAddress, port);
+        IPEndPoint localEndPoint = new IPEndPoint(ipAddress, port);
 
         // Create a TCP/IP socket.
-        listener = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+        Socket listener = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 
         // Bind the socket to the local endpoint and listen for incoming connections.
         listener.Bind(localEndPoint);
@@ -56,15 +54,8 @@ public class HttpServer
 
         Console.WriteLine("\n________________________________________\n\n");
 
-        ContinueListening();
-    }
-
-    void ContinueListening()
-    {
         try
         {
-            data = null;
-
             read = new Thread(ReadThread);
             read.IsBackground = false;
             read.Start();
@@ -73,18 +64,13 @@ public class HttpServer
             {
                 Console.WriteLine("Waiting for a connection... \n");
 
-                ResponseSent = false;
+                responseSent = false;
                 handler = listener.Accept();
 
                 while (true)
                 {
-                    if (ResponseSent)
-                    {
-                        Thread.Sleep(500);
-
-
+                    if (responseSent)
                         break;
-                    }
                 }
             }
         }
@@ -105,12 +91,14 @@ public class HttpServer
             byte[] bytes = new byte[1024];
 
             int a = handler.Receive(bytes);
-            data = Encoding.UTF8.GetString(bytes, 0, a);
+
+            // Incoming data from the client.
+            string data = Encoding.UTF8.GetString(bytes, 0, a);
 
             Request request = new Request(data);
             Response response = new Response(request);
             response.Post(handler);
-            ResponseSent = true;
+            responseSent = true;
 
             handler.Shutdown(SocketShutdown.Both);
             handler.Close();

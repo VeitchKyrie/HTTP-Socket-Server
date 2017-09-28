@@ -19,14 +19,14 @@ public class Response
     Byte[] bytedata;
 
     /// <summary>
-    /// The Responses status. (e.g. 200 OK)
+    /// The Response status. (e.g. 200 OK)
     /// </summary>
-    String status;
+    string status;
 
     /// <summary>
-    /// The Responses mime. (e.g. text/html)
+    /// The Response mime. (e.g. text/html)
     /// </summary>
-    String mime;
+    string mime;
 
     /// <summary>
     /// Response constructor.
@@ -49,13 +49,24 @@ public class Response
                 string file = Environment.CurrentDirectory + HttpServer.WEB_D + request.Url;
                 Console.WriteLine("Requested File: " + file);
 
-                if (File.Exists(file))
-                    Console.WriteLine("Specified file exists.");
+                mime = request.mimes[0];
 
-                bytedata = File.ReadAllBytes(file);
+                if (File.Exists(file))
+                {
+                    Console.WriteLine("Specified file exists.");
+                    bytedata = File.ReadAllBytes(file);
+                    status = "200";
+                }
+                else
+                {
+                    Console.WriteLine("Specified file doesn't exist, sending Error 404.");
+
+                    file = Environment.CurrentDirectory + HttpServer.MSG_D + "/404.html";
+                    bytedata = File.ReadAllBytes(file);
+                    status = "404";
+                }
 
                 Console.WriteLine("Bytes gotten from file.");
-
                 break;
         }
     }
@@ -73,7 +84,7 @@ public class Response
         StreamWriter writer = new StreamWriter(stream);
 
         string Header = String.Format("{0} {1}\r\nServer: {2}\r\nContent-Type: {3}\r\nAccept-Ranges: bytes\r\nContent-Length: {4}\r\n",
-            "HTTP / 1.1", "200", "BetoServer", request.mimes[0], bytedata.Length);
+            HttpServer.VERSION, status, HttpServer.SERVER_NAME, mime, bytedata.Length);
 
         writer.WriteLine(Header);
 
