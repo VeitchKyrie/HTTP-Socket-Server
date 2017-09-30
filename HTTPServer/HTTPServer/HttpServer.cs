@@ -19,7 +19,6 @@ public class HttpServer
     public int port { get; private set; }
 
     Socket handler;
-    Thread read;
 
     bool running = false;
     bool responseSent = false;
@@ -58,64 +57,18 @@ public class HttpServer
         Console.WriteLine("Server Port: " + port);
         Console.WriteLine("\n________________________________________________________________\n\n");
 
-        read = new Thread(ReadThread);
-        read.IsBackground = false;
-        read.Start();
-
         while (true)
         {
             Console.WriteLine("Waiting for a connection... \n");
 
-            responseSent = false;
             handler = listener.Accept();
 
-            while (true)
-            {
-                if (responseSent)
-                    break;
-            }
-        }
-    }
+            byte[] bytes = new byte[1024];
 
-    void ReadThread()
-    {
-        try
-        {
-            while (true)
-            {
-                if (handler == null || !handler.Connected)
-                    continue;
+            int a = handler.Receive(bytes);
+            string data = Encoding.UTF8.GetString(bytes, 0, a);
 
-                // Data buffer for incoming data.
-                byte[] bytes = new byte[1024];
-
-                int a = handler.Receive(bytes);
-
-                // Incoming data from the client.
-                string data = Encoding.UTF8.GetString(bytes, 0, a);
-
-                Request request = new Request(data);
-                Response response = new Response(request);
-                response.Post(handler);
-                responseSent = true;
-
-                handler.Shutdown(SocketShutdown.Both);
-                handler.Close();
-                handler = null;
-            }
-        }
-        catch(Exception e)
-        {
-            Console.WriteLine("ERROR: \n" + e.Message);
-
-            if (handler != null && handler.Connected)
-            {
-                handler.Shutdown(SocketShutdown.Both);
-                handler.Close();
-                handler = null;
-            }
-
-            StartListening();
+            ClientHandling clientHandle = new ClientHandling(data, handler);
         }
     }
 }
