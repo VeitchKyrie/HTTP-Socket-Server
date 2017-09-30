@@ -119,7 +119,6 @@ public class Request
         }
 
         int acceptMimesWord = 0;
-        int lastMime = 0;
 
         for(int x = 0; x < words.Length; x++)
         {

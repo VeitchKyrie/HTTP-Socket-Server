@@ -83,7 +83,7 @@ public class Response
         NetworkStream stream = new NetworkStream(handler);
         StreamWriter writer = new StreamWriter(stream);
 
-        string Header = String.Format("{0} {1}\r\nServer: {2}\r\nContent-Type: {3}\r\nAccept-Ranges: bytes\r\nContent-Length: {4}\r\n",
+        string Header = String.Format("{0} {1}\r\nServer: {2}\r\nContent-Type: {3}\r\nAccept-Ranges: bytes\r\nContent-Length: {4}\r\nSet-Cookie: HasVisited = 1\r\n",
             HttpServer.VERSION, status, HttpServer.SERVER_NAME, mime, bytedata.Length);
 
         writer.WriteLine(Header);

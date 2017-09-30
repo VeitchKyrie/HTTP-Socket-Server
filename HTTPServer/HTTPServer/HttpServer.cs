@@ -14,11 +14,11 @@ public class HttpServer
     public const string WEB_D = "/root/web";
 
     public IPAddress ipAddress { get; private set; }
+    IPEndPoint localEndPoint;
 
     public int port { get; private set; }
 
     Socket handler;
-
     Thread read;
 
     bool running = false;
@@ -31,17 +31,22 @@ public class HttpServer
 
     public void Start()
     {
-        if(!running)
+        if (!running)
+        {
+            Initialize();
             StartListening();
+        }
+    }
+
+    void Initialize()
+    {
+        IPHostEntry ipHostInfo = Dns.Resolve(Dns.GetHostName());
+        ipAddress = ipHostInfo.AddressList[0];
+        localEndPoint = new IPEndPoint(ipAddress, port);
     }
 
     void StartListening()
     {
-        IPHostEntry ipHostInfo = Dns.Resolve(Dns.GetHostName());
-        ipAddress = ipHostInfo.AddressList[0];
-
-        IPEndPoint localEndPoint = new IPEndPoint(ipAddress, port);
-
         // Create a TCP/IP socket.
         Socket listener = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 
@@ -51,58 +56,66 @@ public class HttpServer
 
         Console.WriteLine("Server IP Adress: " + ipAddress);
         Console.WriteLine("Server Port: " + port);
+        Console.WriteLine("\n________________________________________________________________\n\n");
 
-        Console.WriteLine("\n________________________________________\n\n");
+        read = new Thread(ReadThread);
+        read.IsBackground = false;
+        read.Start();
 
-        try
+        while (true)
         {
-            read = new Thread(ReadThread);
-            read.IsBackground = false;
-            read.Start();
+            Console.WriteLine("Waiting for a connection... \n");
+
+            responseSent = false;
+            handler = listener.Accept();
 
             while (true)
             {
-                Console.WriteLine("Waiting for a connection... \n");
-
-                responseSent = false;
-                handler = listener.Accept();
-
-                while (true)
-                {
-                    if (responseSent)
-                        break;
-                }
+                if (responseSent)
+                    break;
             }
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e.ToString());
         }
     }
 
     void ReadThread()
     {
-        while (true)
+        try
         {
-            if (handler == null || !handler.Connected)
-                continue;
+            while (true)
+            {
+                if (handler == null || !handler.Connected)
+                    continue;
 
-            // Data buffer for incoming data.
-            byte[] bytes = new byte[1024];
+                // Data buffer for incoming data.
+                byte[] bytes = new byte[1024];
 
-            int a = handler.Receive(bytes);
+                int a = handler.Receive(bytes);
 
-            // Incoming data from the client.
-            string data = Encoding.UTF8.GetString(bytes, 0, a);
+                // Incoming data from the client.
+                string data = Encoding.UTF8.GetString(bytes, 0, a);
 
-            Request request = new Request(data);
-            Response response = new Response(request);
-            response.Post(handler);
-            responseSent = true;
+                Request request = new Request(data);
+                Response response = new Response(request);
+                response.Post(handler);
+                responseSent = true;
 
-            handler.Shutdown(SocketShutdown.Both);
-            handler.Close();
-            handler = null;
+                handler.Shutdown(SocketShutdown.Both);
+                handler.Close();
+                handler = null;
+            }
+        }
+        catch(Exception e)
+        {
+            Console.WriteLine("ERROR: \n" + e.Message);
+
+            if (handler != null && handler.Connected)
+            {
+                handler.Shutdown(SocketShutdown.Both);
+                handler.Close();
+                handler = null;
+            }
+
+            StartListening();
         }
     }
 }
