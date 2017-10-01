@@ -1,0 +1,42 @@
+div
+{
+    position: absolute;
+}
+
+.Box1
+{
+    z-index: 2;
+    top: 30px;
+    left: 10px;
+    border: 2px solid red;
+}
+
+.Box2
+{
+    z-index: 3;
+    top: 5px;
+    left: 350px;
+    border: 5px dashed black;
+}
+
+.Box3
+{
+    z-index: 1;
+    top: 233px;
+    left: 75px;
+    border: 3.5px double green;
+}
+
+.Box4
+{
+    top: 367px;
+    left: 370px;
+    z-index: 5;
+    border: 2px groove blue;
+}
+
+.Box5
+{
+    top: 750px;
+    left: 6px;
+}

@@ -1,0 +1,50 @@
+body
+{
+    background-color:#eaeaea;
+    font-family: 'Encode Sans Expanded', sans-serif;
+    text-align: left;
+}
+
+h1 
+{
+    color:darkblue;
+    font-size: 28px;
+}
+
+h2
+{
+    font-size: 20px;
+}
+
+p
+{
+    font-size: 12px;
+}
+
+font
+{
+     font-size: 12px;
+}
+
+ul
+{
+    list-style-type: square;
+}
+
+table
+{
+    border-width: 3px;
+    border-style: solid;
+    border-color: black;
+    border-spacing: 10px;
+}
+
+td
+{
+    border-width: 3px;
+}
+
+img
+{
+    border: 2px solid black;
+}

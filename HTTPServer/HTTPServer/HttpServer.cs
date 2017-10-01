@@ -13,6 +13,8 @@ public class HttpServer
     public const string MSG_D = "/root/msg";
     public const string WEB_D = "/root/web";
 
+    uint handledRequests = 0;
+
     public IPAddress ipAddress { get; private set; }
     IPEndPoint localEndPoint;
 
@@ -59,7 +61,7 @@ public class HttpServer
 
         while (true)
         {
-            Console.WriteLine("Waiting for a connection... \n");
+            Console.WriteLine("Handled Requests: " + handledRequests + " Waiting for a connection... \n");
 
             handler = listener.Accept();
 
@@ -69,6 +71,7 @@ public class HttpServer
             string data = Encoding.UTF8.GetString(bytes, 0, a);
 
             ClientHandling clientHandle = new ClientHandling(data, handler);
+            handledRequests++;
         }
     }
 }

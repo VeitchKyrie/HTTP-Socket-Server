@@ -1,0 +1,35 @@
+@keyframes blink 
+{ 
+   50% { border-color: blue; } 
+}
+
+.outerBox
+{
+    width: 320px;
+    padding: 40px;
+    border: 5px solid red;
+    margin: 0; 
+    background-color: lightgray;
+    position: absolute;
+    left: 9px;
+    top: 20px;
+}
+
+.innerBox
+{
+    width: 270px;
+    padding: 5px;
+    border: 5px solid red;
+    margin: 8px; 
+    background-color: lightgray;
+    position: relative;
+    left: 6px;
+    top: 5px;
+}
+
+.coreBox
+{
+    margin: 8.5px;
+    animation: blink .5s step-end infinite alternate;
+    border: 5px solid red;
+}
