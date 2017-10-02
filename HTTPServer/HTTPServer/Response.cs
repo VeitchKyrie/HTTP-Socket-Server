@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 public class Response
@@ -42,33 +44,79 @@ public class Response
     /// </summary>
     void ProcessRequest()
     {
-        switch (request.Type)
+        try
         {
-            case RequestType.GET:
+            switch (request.Type)
+            {
+                case RequestType.GET:
 
-                string file = Environment.CurrentDirectory + HttpServer.WEB_D + request.Url;
-                Console.WriteLine("Requested File: " + file);
+                    string file = Environment.CurrentDirectory + HttpServer.WEB_D + request.Url;
+                    Console.WriteLine("Requested File: " + file);
 
-                mime = request.mimes[0];
+                    mime = request.mimes[0];
 
-                if (File.Exists(file))
-                {
-                    Console.WriteLine("Specified file exists.");
-                    bytedata = File.ReadAllBytes(file);
-                    status = "200";
-                }
-                else
-                {
-                    Console.WriteLine("Specified file doesn't exist, sending Error 404.");
+                    if (File.Exists(file))
+                    {
+                        Console.WriteLine("Specified file exists.");
+                        bytedata = File.ReadAllBytes(file);
+                        status = "200";
+                    }
+                    else
+                    {
+                        if (request.Url.Contains("cgi-bin"))
+                        {
+                            Console.WriteLine("Running CGI Script.");
+                            GetCGIResult();
+                            return;
+                        }
 
-                    file = Environment.CurrentDirectory + HttpServer.MSG_D + "/404.html";
-                    bytedata = File.ReadAllBytes(file);
-                    status = "404";
-                }
+                        Console.WriteLine("Specified file doesn't exist, sending Error 404.");
 
-                Console.WriteLine("Bytes gotten from file.");
-                break;
+                        file = Environment.CurrentDirectory + HttpServer.MSG_D + "/404.html";
+                        bytedata = File.ReadAllBytes(file);
+                        status = "404";
+                    }
+
+                    Console.WriteLine("Bytes gotten from file.");
+                    break;
+            }
         }
+        catch
+        {
+            string file = Environment.CurrentDirectory + HttpServer.MSG_D + "/500.html";
+            bytedata = File.ReadAllBytes(file);
+            status = "500";
+        }
+    }
+
+    void GetCGIResult()
+    {
+        string path = Environment.CurrentDirectory + HttpServer.WEB_D + @"\cgi-bin\Build\";
+        string argument = request.Url;
+
+        argument = argument.Replace("/", "");
+        argument = argument.Replace(@"\", "");
+
+        if (argument.StartsWith("cgi-bin"))
+            argument = argument.Substring(7);
+
+        ProcessStartInfo info = new ProcessStartInfo();
+        info.WindowStyle = ProcessWindowStyle.Hidden;
+        info.Arguments = argument;
+        info.FileName = path + "CGI.exe";
+
+        Process cgi = Process.Start(info);
+        Thread.Sleep(200);
+
+        string file = Environment.CurrentDirectory + HttpServer.WEB_D + request.Url;
+
+        if (!file.EndsWith(".html"))
+            file += ".html";
+
+        bytedata = File.ReadAllBytes(file);
+        status = "200";
+
+        File.Delete(file);
     }
     
     /// <summary>
