@@ -70,7 +70,7 @@ public class HttpServer
             int a = handler.Receive(bytes);
             string data = Encoding.UTF8.GetString(bytes, 0, a);
 
-            ClientHandling clientHandle = new ClientHandling(data, handler);
+            ClientHandling clientHandle = new ClientHandling(data, handler, handledRequests);
             handledRequests++;
         }
     }

@@ -75,24 +75,24 @@ public class Response
     /// Sends the bytedata to the client.
     /// </summary>
     /// <param name="handler">The Socket in which the data will be sent through.</param>
-    public void Post(Socket handler)
+    public void Post(Socket handler, uint ID)
     {
-        if (request.Type == RequestType.UNDEFINED)
-            return;
+        if (request.Type != RequestType.UNDEFINED)
+        {
+            NetworkStream stream = new NetworkStream(handler);
+            StreamWriter writer = new StreamWriter(stream);
 
-        NetworkStream stream = new NetworkStream(handler);
-        StreamWriter writer = new StreamWriter(stream);
+            string Header = String.Format("{0} {1}\r\nServer: {2}\r\nContent-Type: {3}\r\nAccept-Ranges: bytes\r\nContent-Length: {4}\r\nSet-Cookie: HasVisited = 1\r\n",
+                HttpServer.VERSION, status, HttpServer.SERVER_NAME, mime, bytedata.Length);
 
-        string Header = String.Format("{0} {1}\r\nServer: {2}\r\nContent-Type: {3}\r\nAccept-Ranges: bytes\r\nContent-Length: {4}\r\nSet-Cookie: HasVisited = 1\r\n",
-            HttpServer.VERSION, status, HttpServer.SERVER_NAME, mime, bytedata.Length);
+            writer.WriteLine(Header);
 
-        writer.WriteLine(Header);
+            writer.Flush();
+            stream.Write(bytedata, 0, bytedata.Length);
+            stream.Close();
 
-        writer.Flush();
-        stream.Write(bytedata, 0, bytedata.Length);
-        stream.Close();
-
-        Console.WriteLine("\nRESPONSE:\n" + Header + "\nBytes sent to client.");
-        Console.WriteLine("\n________________________________________\n\n");
+            Console.WriteLine("\nClient Hanlding ID: " + ID + ", RESPONSE:\n" + Header + "\nBytes sent to client.");
+            Console.WriteLine("\n________________________________________\n\n");
+        }
     }
 }

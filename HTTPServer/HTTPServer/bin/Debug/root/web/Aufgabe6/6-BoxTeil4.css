@@ -8,26 +8,26 @@ div
 }
 .header 
 {
-    border: 1px solid red;
+    border: 3px solid red;
 }
 .info 
 {
     height: 500px;
     width: 25%;
     float: left;
-    border: 1px solid red;
+    border: 3px solid red;
 }
 .content 
 {
     height: 500px;
     width: 75%;
     float: left;
-    border: 1px solid red;
+    border: 3px solid red;
 }
 .footer 
 {
     width: 100%;
     float: left;
-    border: 1px solid red;
+    border: 3px solid red;
     margin-bottom: 10px;
 }

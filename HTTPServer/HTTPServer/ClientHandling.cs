@@ -10,11 +10,13 @@ public class ClientHandling
 {
     string data;
     Socket handler;
+    uint ID;
 
-    public ClientHandling(string data, Socket handler)
+    public ClientHandling(string data, Socket handler, uint ID)
     {
         this.data = data;
         this.handler = handler;
+        this.ID = ID;
 
         Thread thread = new Thread(HandleClient);
         thread.IsBackground = false;
@@ -25,7 +27,7 @@ public class ClientHandling
     {
         Request request = new Request(data);
         Response response = new Response(request);
-        response.Post(handler);
+        response.Post(handler, ID);
 
         handler.Shutdown(SocketShutdown.Both);
         handler.Close();
