@@ -12,8 +12,12 @@ public class ConnectionHandling
 
     public uint ID;
 
-    public int openThreads = 0;
+    public int totalClosedThreats = 0;
     public uint totalThreads = 0;
+
+    bool closing = false;
+    bool closed = false;
+
 
     public ConnectionHandling(Socket handler, uint clientID)
     {
@@ -24,17 +28,15 @@ public class ConnectionHandling
         handleClient.IsBackground = false;
         handleClient.Start();
 
-        Thread timeOut = new Thread(ConectionTimeoutCallback);
+        Thread timeOut = new Thread(ConectionTimeoutCheck);
         timeOut.Start();
     }
 
     void HandleClient()
     {
-        Console.WriteLine("\n\n\n\n\n CONNECTION STARTED" + ID);
-
         try
         {
-            while (true)
+            while (!closing)
             {
                 byte[] bytes = new byte[1024];
 
@@ -43,7 +45,8 @@ public class ConnectionHandling
 
                 if (data != "")
                 {
-                    DataHandling dataHandle = new DataHandling(data, this);
+                    totalThreads++;
+                    DataHandling dataHandle = new DataHandling(data, this, closing);
                 }
             }
         }
@@ -52,16 +55,35 @@ public class ConnectionHandling
             if (handler != null)
                 Console.WriteLine(e.Message);
         }
+
+        closed = true;
     }
 
-    private void ConectionTimeoutCallback(object state)
+    private void ConectionTimeoutCheck(object state)
     {
-        Thread.Sleep(500);
+        do
+        {
+            Thread.Sleep(250);
+        }
+        while (totalThreads != totalClosedThreats);
 
-        while (openThreads != 0)
-            Thread.Sleep(200);        
+        closing = true;
 
-        Console.WriteLine("Connection timeout, closing Connection.\nConnection ID: " + ID + ", Total processed Threads: " + totalThreads + "\n");
+        int timer = 0;
+
+        while (!closed)
+        {
+            Thread.Sleep(5);
+
+            if (totalThreads == totalClosedThreats)
+            {
+                timer += 5;
+                if (timer > 100)
+                    break;
+            }
+        }
+
+        Console.WriteLine("\nConnection timeout, closing Connection.\nConnection ID: " + ID + ", Total processed Threads: " + totalThreads);
 
         handler.Shutdown(SocketShutdown.Both);
         handler.Close();

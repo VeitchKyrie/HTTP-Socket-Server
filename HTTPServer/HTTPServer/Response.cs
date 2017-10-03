@@ -39,6 +39,8 @@ public class Response
         ProcessRequest();
     }
 
+    string connection;
+
     /// <summary>
     /// Generates the bytes to be sent to the client.
     /// </summary>
@@ -50,10 +52,17 @@ public class Response
             {
                 case RequestType.GET:
 
+                    Console.WriteLine("________________________________________________________________\n");
+
                     string file = Environment.CurrentDirectory + HttpServer.WEB_D + request.Url;
                     Console.WriteLine("Requested File: " + file);
 
                     mime = request.mimes[0];
+
+                    if (request.dataHandling.closeAfterResponse)
+                        connection = "close";
+                    else
+                        connection = "keep-alive";
 
                     if (File.Exists(file))
                     {
@@ -147,22 +156,42 @@ public class Response
     /// <param name="handler">The Socket in which the data will be sent through.</param>
     public void Post(Socket handler)
     {
-        if (request.Type != RequestType.UNDEFINED)
+        try
         {
-            NetworkStream stream = new NetworkStream(handler);
-            StreamWriter writer = new StreamWriter(stream);
+            if (request.Type != RequestType.UNDEFINED)
+            {
+                NetworkStream stream = new NetworkStream(handler);
+                StreamWriter writer = new StreamWriter(stream);
 
-            string Header = String.Format("{0} {1}\r\nServer: {2}\r\nConnection: keep-alive\r\nContent-Type: {3}\r\nAccept-Ranges: bytes\r\nContent-Length: {4}\r\nSet-Cookie: HasVisited = 1\r\n",
-                HttpServer.VERSION, status, HttpServer.SERVER_NAME, mime, bytedata.Length);
+                string Header = String.Format("{0} {1}\r\nServer: {2}\r\nConnection: {3}\r\nContent-Type: {4}\r\nAccept-Ranges: bytes\r\nContent-Length: {5}\r\nSet-Cookie: HasVisited = 1\r\n",
+                    HttpServer.VERSION, status, HttpServer.SERVER_NAME, connection, mime, bytedata.Length);
 
-            writer.WriteLine(Header);
+                writer.WriteLine(Header);
 
-            writer.Flush();
-            stream.Write(bytedata, 0, bytedata.Length);
-            stream.Close();
+                writer.Flush();
+                stream.Write(bytedata, 0, bytedata.Length);
+                stream.Close();
 
-            Console.WriteLine("\nConnection ID: " + request.dataHandling.connection.ID + ", Thread ID:" + request.dataHandling.threadID + "\nRESPONSE:\n" + Header + "\nBytes sent to client.");
-            Console.WriteLine("\n________________________________________\n\n");
+                Console.WriteLine("\nConnection ID: " + request.dataHandling.connection.ID + ", Thread ID:" + request.dataHandling.threadID + "\nRESPONSE:\n" + Header + "\nBytes sent to client.");
+                Console.WriteLine("________________________________________________________________");
+            }
+        }
+        catch(Exception e)
+        {
+            Console.WriteLine("________________________________________________________________");
+            Console.WriteLine("________________________________________________________________");
+            Console.WriteLine("________________________________________________________________\n\n");
+
+            Console.WriteLine("-FATAL ERROR-");
+            Console.WriteLine("Connection ID: " + request.dataHandling.connection.ID);
+            Console.WriteLine("Thread ID: " + request.dataHandling.threadID);
+            Console.WriteLine("Total threads on this Connection: " + request.dataHandling.connection.totalThreads);
+            Console.WriteLine("Total closed threads on this Connection: " + request.dataHandling.connection.totalClosedThreats);
+            Console.WriteLine("Message: " + e.Message);
+            
+            Console.WriteLine("\n________________________________________________________________");
+            Console.WriteLine("________________________________________________________________");
+            Console.WriteLine("________________________________________________________________\n");
         }
     }
 }

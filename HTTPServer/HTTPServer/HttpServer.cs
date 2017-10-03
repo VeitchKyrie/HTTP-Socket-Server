@@ -55,12 +55,14 @@ public class HttpServer
         listener.Listen(10);
 
         Console.WriteLine("Server IP Adress: " + ipAddress);
-        Console.WriteLine("Server Port: " + port);
-        Console.WriteLine("\n________________________________________________________________\n\n");
+        Console.WriteLine("Server Port: " + port + "\n");
 
         while (true)
         {
-            Console.WriteLine("Handled Connections: " + totalConnections + " Waiting for a connection... \n");
+            Console.WriteLine("________________________________________________________________");
+            Console.WriteLine("\nHandled Connections: " + totalConnections + " Waiting for a connection...");
+            Console.WriteLine("________________________________________________________________");
+
 
             handler = listener.Accept();
 

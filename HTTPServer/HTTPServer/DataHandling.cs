@@ -11,19 +11,19 @@ public class DataHandling
     public ConnectionHandling connection;
     string data;
     public uint threadID;
+    public bool closeAfterResponse;
 
-    public DataHandling(string data, ConnectionHandling client)
+    public DataHandling(string data, ConnectionHandling connection, bool closeAfterResponse)
     {
+        this.closeAfterResponse = closeAfterResponse;
         this.data = data;
-        this.connection = client;
+        this.connection = connection;
 
         Thread thread = new Thread(HandleData);
         thread.IsBackground = false;
         thread.Start();
 
-        client.openThreads++;
-        client.totalThreads++;
-        threadID = client.totalThreads;
+        threadID = connection.totalThreads;
     }
 
     void HandleData()
@@ -32,6 +32,6 @@ public class DataHandling
         Response response = new Response(request);
         response.Post(connection.handler);
 
-        connection.openThreads--;
+        connection.totalClosedThreats++;
     }
 }

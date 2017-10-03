@@ -59,6 +59,7 @@ public class Request
 
         if (words.Length > 1)
         {
+            Console.WriteLine("________________________________________________________________");
             Console.WriteLine("\nConnection ID: " + dataHandling.connection.ID + ", Thread ID: " + dataHandling.threadID + "\nREQUEST: ");
             Console.WriteLine(data);
         }
@@ -134,12 +135,7 @@ public class Request
 
         mimes = words[acceptMimesWord + 1].Split(',');
 
-        Console.WriteLine("Mimes:");
-
-        foreach(string mime in mimes)
-            Console.WriteLine(mime);
-
-        Console.WriteLine("");
+        Console.WriteLine("\n________________________________________________________________");
     }
 }
 
