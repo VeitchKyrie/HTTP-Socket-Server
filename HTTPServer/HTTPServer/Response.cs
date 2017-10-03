@@ -81,11 +81,9 @@ public class Response
                     break;
             }
         }
-        catch
+        catch(Exception e)
         {
-            string file = Environment.CurrentDirectory + HttpServer.MSG_D + "/500.html";
-            bytedata = File.ReadAllBytes(file);
-            status = "500";
+            SendInternErrorPage(e);
         }
     }
 
@@ -100,25 +98,49 @@ public class Response
         if (argument.StartsWith("cgi-bin"))
             argument = argument.Substring(7);
 
-        ProcessStartInfo info = new ProcessStartInfo();
-        info.WindowStyle = ProcessWindowStyle.Hidden;
-        info.Arguments = argument;
-        info.FileName = path + "CGI.exe";
+        Process createNewFile = new Process();
+        createNewFile.StartInfo.FileName = path + "CGI.exe";
+        createNewFile.StartInfo.Arguments = argument;
+        createNewFile.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
+        createNewFile.EnableRaisingEvents = true;
+        createNewFile.Exited += new EventHandler(GetGeneratedFileData);
+        createNewFile.Start();
 
-        Process cgi = Process.Start(info);
-        Thread.Sleep(200);
-
-        string file = Environment.CurrentDirectory + HttpServer.WEB_D + request.Url;
-
-        if (!file.EndsWith(".html"))
-            file += ".html";
-
-        bytedata = File.ReadAllBytes(file);
-        status = "200";
-
-        File.Delete(file);
+        while(bytedata == null)
+            Thread.Sleep(10);
     }
-    
+
+    void GetGeneratedFileData(object sender, EventArgs ev)
+    {
+        try
+        {
+            Console.WriteLine("CGI Process terminated");
+
+            string file = Environment.CurrentDirectory + HttpServer.WEB_D + request.Url;
+
+            if (!file.EndsWith(".html"))
+                file += ".html";
+
+            status = "200";
+            bytedata = File.ReadAllBytes(file);
+
+            File.Delete(file);
+        }
+        catch(Exception e)
+        {
+            SendInternErrorPage(e);
+        }
+    }
+
+    void SendInternErrorPage(Exception e)
+    {
+        Console.WriteLine("ERROR, sending code 500.\n" + e.Message);
+
+        string file = Environment.CurrentDirectory + HttpServer.MSG_D + "/500.html";
+        bytedata = File.ReadAllBytes(file);
+        status = "500";
+    }
+
     /// <summary>
     /// Sends the bytedata to the client.
     /// </summary>
