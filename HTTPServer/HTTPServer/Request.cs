@@ -21,12 +21,15 @@ public class Request
     /// </summary>
     public string[] mimes;
 
+    public DataHandling dataHandling;
+
     /// <summary>
     /// Request Constructor.
     /// </summary>
     /// <param name="data">The incomed data.</param>
-    public Request (string data)
+    public Request (string data, DataHandling dataHandling)
     {
+        this.dataHandling = dataHandling;
         ProcessWords(GetWords(data));
     }
 
@@ -56,7 +59,7 @@ public class Request
 
         if (words.Length > 1)
         {
-            Console.WriteLine("\nREQUEST:");
+            Console.WriteLine("\nConnection ID: " + dataHandling.connection.ID + ", Thread ID: " + dataHandling.threadID + "\nREQUEST: ");
             Console.WriteLine(data);
         }
         return words;

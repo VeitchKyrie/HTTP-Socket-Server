@@ -13,7 +13,7 @@ public class HttpServer
     public const string MSG_D = "/root/msg";
     public const string WEB_D = "/root/web";
 
-    uint handledRequests = 0;
+    uint totalConnections = 0;
 
     public IPAddress ipAddress { get; private set; }
     IPEndPoint localEndPoint;
@@ -23,7 +23,6 @@ public class HttpServer
     Socket handler;
 
     bool running = false;
-    bool responseSent = false;
 
     public HttpServer(int port)
     {
@@ -61,17 +60,13 @@ public class HttpServer
 
         while (true)
         {
-            Console.WriteLine("Handled Requests: " + handledRequests + " Waiting for a connection... \n");
+            Console.WriteLine("Handled Connections: " + totalConnections + " Waiting for a connection... \n");
 
             handler = listener.Accept();
 
-            byte[] bytes = new byte[1024];
+            ConnectionHandling client = new ConnectionHandling(handler, totalConnections);
 
-            int a = handler.Receive(bytes);
-            string data = Encoding.UTF8.GetString(bytes, 0, a);
-
-            ClientHandling clientHandle = new ClientHandling(data, handler, handledRequests);
-            handledRequests++;
+            totalConnections++;
         }
     }
 }
