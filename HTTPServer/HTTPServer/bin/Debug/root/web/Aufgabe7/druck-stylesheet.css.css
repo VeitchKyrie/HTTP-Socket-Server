@@ -1,0 +1,33 @@
+* 
+{
+    box-sizing: border-box;
+}
+div
+{
+    padding: 15px;
+}
+.header 
+{
+    border: 1px solid red;
+}
+.info 
+{
+    height: 500px;
+    width: 25%;
+    float: left;
+    border: 1px solid red;
+}
+.content 
+{
+    height: 500px;
+    width: 75%;
+    float: left;
+    border: 1px solid red;
+}
+.footer 
+{
+    width: 100%;
+    float: left;
+    border: 1px solid red;
+    margin-bottom: 10px;
+}

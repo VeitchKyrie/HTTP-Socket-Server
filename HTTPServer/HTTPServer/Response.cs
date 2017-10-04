@@ -8,6 +8,9 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
+/// <summary>
+/// Class that uses the gotten data from the Request class to generate and send a response to the client.
+/// </summary>
 public class Response
 {
     /// <summary>
@@ -31,6 +34,12 @@ public class Response
     string mime;
 
     /// <summary>
+    /// The Servers connection answer (either "close" or "keep-alive"). 
+    /// Tells the client if it should close the connection after receiving the response or not.
+    /// </summary>
+    string connection;
+
+    /// <summary>
     /// Response constructor.
     /// </summary>
     public Response(Request request)
@@ -38,8 +47,6 @@ public class Response
         this.request = request;
         ProcessRequest();
     }
-
-    string connection;
 
     /// <summary>
     /// Generates the bytes to be sent to the client.
@@ -57,7 +64,7 @@ public class Response
                     string file = Environment.CurrentDirectory + HttpServer.WEB_D + request.Url;
                     Console.WriteLine("Requested File: " + file);
 
-                    mime = request.mimes[0];
+                    mime = request.Mimes[0];
 
                     if (request.dataHandling.closeAfterResponse)
                         connection = "close";
@@ -96,6 +103,10 @@ public class Response
         }
     }
 
+    /// <summary>
+    /// Starts the CGI.exe Process and attaches the GetGeneratedFileData Method to the Process's Exited EventHandler.
+    /// The CGI.exe Process creates a new .html file with custom input.
+    /// </summary>
     void GetCGIResult()
     {
         string path = Environment.CurrentDirectory + HttpServer.WEB_D + @"\cgi-bin\Build\";
@@ -119,6 +130,9 @@ public class Response
             Thread.Sleep(10);
     }
 
+    /// <summary>
+    /// Is called when the CGI.exe process is terminated. Gets the bytes of the created .html file by the CGI.exe process and deletes it afterwards.
+    /// </summary>
     void GetGeneratedFileData(object sender, EventArgs ev)
     {
         try
@@ -141,6 +155,10 @@ public class Response
         }
     }
 
+    /// <summary>
+    /// Sends the error code 500 to the client with the "500.html" file
+    /// </summary>
+    /// <param name="e"></param>
     void SendInternErrorPage(Exception e)
     {
         Console.WriteLine("ERROR, sending code 500.\n" + e.Message);

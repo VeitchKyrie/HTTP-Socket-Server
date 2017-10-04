@@ -4,6 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+/// <summary>
+/// Class that analyzes the incoming data.
+/// </summary>
 public class Request
 {
     /// <summary>
@@ -17,10 +20,18 @@ public class Request
     public string Url;
 
     /// <summary>
+    /// The host's domain or IP adress, used for differentiating virtual hosts on a single server.
+    /// </summary>
+    public string Host;
+
+    /// <summary>
     /// The Request mimes. (e.g. text/html, image/*)
     /// </summary>
-    public string[] mimes;
+    public string[] Mimes;
 
+    /// <summary>
+    /// The DataHandling instance that created this instace.
+    /// </summary>
     public DataHandling dataHandling;
 
     /// <summary>
@@ -67,9 +78,9 @@ public class Request
     }
 
     /// <summary>
-    /// Gets the Request Type and URL.
+    /// Gets the Request Type, URL, mimes and the host from a string array.
     /// </summary>
-    /// <param name="words">The words to be processed.</param>
+    /// <param name="words">The words to be processed. Input to this method is the output of the GenerateWords method.</param>
     void ProcessWords(string[] words)
     {
         switch (words[0])
@@ -114,31 +125,39 @@ public class Request
         Url = words[1];
 
         if (Url == "/")
-        {
             Url = "/index.html";
-        }
-        else if (!Url.StartsWith("\\") && !Url.StartsWith("/"))
-        {
-            Url = "/" + Url;
-        }
 
-        int acceptMimesWord = 0;
+        int mimesIndex = GetSpecificIndex("Accept:", words);
+        Mimes = words[mimesIndex + 1].Split(',');
 
-        for(int x = 0; x < words.Length; x++)
-        {
-            if (words[x] == "Accept:")
-            {
-                acceptMimesWord = x;
-                break;
-            }
-        }
-
-        mimes = words[acceptMimesWord + 1].Split(',');
+        int hostIndex = GetSpecificIndex("Host:", words);
+        Host = words[hostIndex + 1];
 
         Console.WriteLine("\n________________________________________________________________");
     }
+
+    /// <summary>
+    /// Searches for a specific string in a string array and returns its index.
+    /// </summary>
+    /// <param name="info">The string to be found.</param>
+    /// <param name="words">The string array in which to look for.</param>
+    /// <returns></returns>
+    int GetSpecificIndex(string info, string[] words)
+    {
+        for (int x = 0; x < words.Length; x++)
+        {
+            if (words[x] == info)
+                return x;
+        }
+
+        return -1;
+    }
 }
 
+
+/// <summary>
+/// The Request type enum of a Request. It's normally GET, but whatever.
+/// </summary>
 public enum RequestType
 {
     GET,
