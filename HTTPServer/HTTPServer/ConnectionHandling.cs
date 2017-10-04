@@ -41,7 +41,16 @@ public class ConnectionHandling
     /// <summary>
     /// True when the handleClient Thread confirms that it's not going to create any more DataHandle instances.
     /// </summary>
-    bool closed = false;
+    public bool Closed {get; private set; }
+
+    /// <summary>
+    /// The client's cookie;
+    /// </summary>
+    public string Cookie = "";
+
+    Thread handleClient;
+
+    int unhandleddata = 0;
 
     /// <summary>
     /// The ConnectionHandling constructor.
@@ -53,7 +62,7 @@ public class ConnectionHandling
         this.handler = handler;
         ID = clientID;
 
-        Thread handleClient = new Thread(HandleClient);
+        handleClient = new Thread(HandleClient);
         handleClient.IsBackground = false;
         handleClient.Start();
 
@@ -67,6 +76,8 @@ public class ConnectionHandling
     /// </summary>
     void HandleClient()
     {
+        Closed = false;
+
         try
         {
             while (!closing)
@@ -75,12 +86,22 @@ public class ConnectionHandling
 
                 int a = handler.Receive(bytes);
                 string data = Encoding.UTF8.GetString(bytes, 0, a);
+                int handled = -1;
 
                 if (data != "")
                 {
-                    totalThreads++;
-                    DataHandling dataHandle = new DataHandling(data, this, closing);
+                    handled = 0;
+
+                    if (!closing)
+                    {
+                        handled = 1;
+                        totalThreads++;
+                        DataHandling dataHandle = new DataHandling(data, this, closing);
+                    }
                 }
+
+                if (handled == 0)
+                    unhandleddata++;
             }
         }
         catch (Exception e)
@@ -89,7 +110,7 @@ public class ConnectionHandling
                 Console.WriteLine(e.Message);
         }
 
-        closed = true;
+        Closed = true;
     }
 
     /// <summary>
@@ -109,7 +130,7 @@ public class ConnectionHandling
 
         int timer = 0;
 
-        while (!closed)
+        while (!Closed)
         {
             Thread.Sleep(5);
 
@@ -120,11 +141,17 @@ public class ConnectionHandling
             {
                 timer += 5;
                 if (timer > 100)
+                {
+                    Closed = true;
+                    Console.WriteLine("ABORTED, " + unhandleddata + " data incomes have NOT been handled. Total threads: " + totalThreads + ", Finished Threads: " + totalClosedThreats);
+                    handleClient.Abort();
                     break;
+                }
             }
         }
 
-        Console.WriteLine("\nConnection timeout, closing Connection.\nConnection ID: " + ID + ", Total processed Threads: " + totalThreads);
+        if(HttpServer.DebugLevel <= 2)
+            Console.WriteLine("\nConnection timeout, closing Connection.\nConnection ID: " + ID + ", Total processed Threads: " + totalThreads);
 
         // Closes connection
         handler.Shutdown(SocketShutdown.Both);

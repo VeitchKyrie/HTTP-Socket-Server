@@ -13,6 +13,11 @@ public class HttpServer
     public const string SERVER_NAME = "BetoServer";
 
     /// <summary>
+    /// The Servers debug level.
+    /// </summary>
+    public const int DebugLevel = 2;
+
+    /// <summary>
     /// The used HTTP version.
     /// </summary>
     public const string VERSION = "HTTP / 1.1";
@@ -102,9 +107,10 @@ public class HttpServer
     {
         while (true)
         {
-            Console.WriteLine("________________________________________________________________");
-            Console.WriteLine("\nHandled Connections: " + totalConnections + " Waiting for a connection...");
-            Console.WriteLine("________________________________________________________________");
+            if(DebugLevel <= 0)
+            { 
+                Console.WriteLine("\nHandled Connections: " + totalConnections + " Waiting for a connection...");
+            }
 
             Socket handler = listener.Accept();
 

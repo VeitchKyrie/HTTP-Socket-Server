@@ -1,0 +1,11 @@
+@media print 
+{
+    div 
+    {
+        margin: auto;
+        width: 805px;
+        text-align: left;
+        font-size: 18px;
+        font-family: 'Times New Roman';
+    }
+}

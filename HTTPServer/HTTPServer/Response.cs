@@ -21,7 +21,7 @@ public class Response
     /// <summary>
     /// The bytes to be transmitted to the client.
     /// </summary>
-    Byte[] bytedata;
+    byte[] bytedata;
 
     /// <summary>
     /// The Response status. (e.g. 200 OK)
@@ -59,21 +59,21 @@ public class Response
             {
                 case RequestType.GET:
 
-                    Console.WriteLine("________________________________________________________________\n");
-
                     string file = Environment.CurrentDirectory + HttpServer.WEB_D + request.Url;
-                    Console.WriteLine("Requested File: " + file);
+                    if (HttpServer.DebugLevel <= 1)
+                        Console.WriteLine("Requested File: " + file);
 
                     mime = request.Mimes[0];
 
-                    if (request.dataHandling.closeAfterResponse)
+                    if (request.dataHandler.closeAfterResponse)
                         connection = "close";
                     else
                         connection = "keep-alive";
 
                     if (File.Exists(file))
                     {
-                        Console.WriteLine("Specified file exists.");
+                        if (HttpServer.DebugLevel <= 1)
+                            Console.WriteLine("Specified file exists.");
                         bytedata = File.ReadAllBytes(file);
                         status = "200";
                     }
@@ -86,14 +86,15 @@ public class Response
                             return;
                         }
 
-                        Console.WriteLine("Specified file doesn't exist, sending Error 404.");
+                        Console.WriteLine("Specified file doesn't exist, sending Error 404. Requested File: " + request.Url);
 
                         file = Environment.CurrentDirectory + HttpServer.MSG_D + "/404.html";
                         bytedata = File.ReadAllBytes(file);
                         status = "404";
                     }
 
-                    Console.WriteLine("Bytes gotten from file.");
+                    if (HttpServer.DebugLevel <= 1)
+                        Console.WriteLine("Bytes gotten from file.");
                     break;
             }
         }
@@ -137,7 +138,8 @@ public class Response
     {
         try
         {
-            Console.WriteLine("CGI Process terminated");
+            if(HttpServer.DebugLevel <= 0)
+                Console.WriteLine("CGI Process terminated");
 
             string file = Environment.CurrentDirectory + HttpServer.WEB_D + request.Url;
 
@@ -174,15 +176,25 @@ public class Response
     /// <param name="handler">The Socket in which the data will be sent through.</param>
     public void Post(Socket handler)
     {
-        try
-        {
+        //try
+        //{
             if (request.Type != RequestType.UNDEFINED)
             {
                 NetworkStream stream = new NetworkStream(handler);
                 StreamWriter writer = new StreamWriter(stream);
 
-                string Header = String.Format("{0} {1}\r\nServer: {2}\r\nConnection: {3}\r\nContent-Type: {4}\r\nAccept-Ranges: bytes\r\nContent-Length: {5}\r\nSet-Cookie: HasVisited = 1\r\n",
+                string Header = String.Format("{0} {1}\r\nServer: {2}\r\nConnection: {3}\r\nContent-Type: {4}\r\nAccept-Ranges: bytes\r\nContent-Length: {5}\r\n",
                     HttpServer.VERSION, status, HttpServer.SERVER_NAME, connection, mime, bytedata.Length);
+
+                if (request.Cookie == "")
+                {
+                    if (request.dataHandler.connection.Cookie == "")
+                    {
+                        request.dataHandler.connection.Cookie = GenerateUniqueClientCookie();
+                    }
+
+                    Header += "Set - Cookie: " + request.dataHandler.connection.Cookie + "\r\n";
+                }
 
                 writer.WriteLine(Header);
 
@@ -190,26 +202,38 @@ public class Response
                 stream.Write(bytedata, 0, bytedata.Length);
                 stream.Close();
 
-                Console.WriteLine("\nConnection ID: " + request.dataHandling.connection.ID + ", Thread ID:" + request.dataHandling.threadID + "\nRESPONSE:\n" + Header + "\nBytes sent to client.");
-                Console.WriteLine("________________________________________________________________");
-            }
-        }
-        catch(Exception e)
-        {
-            Console.WriteLine("________________________________________________________________");
-            Console.WriteLine("________________________________________________________________");
-            Console.WriteLine("________________________________________________________________\n\n");
+                if (HttpServer.DebugLevel <= 1)
+                {
+                    Console.WriteLine("\nConnection ID: " + request.dataHandler.connection.ID + ", Thread ID:" + request.dataHandler.threadID + "\nRESPONSE:\n" + Header + "\nBytes sent to client.");
+                    Console.WriteLine("________________________________________________________________");
+                }
 
-            Console.WriteLine("-FATAL ERROR-");
-            Console.WriteLine("Connection ID: " + request.dataHandling.connection.ID);
-            Console.WriteLine("Thread ID: " + request.dataHandling.threadID);
-            Console.WriteLine("Total threads on this Connection: " + request.dataHandling.connection.totalThreads);
-            Console.WriteLine("Total closed threads on this Connection: " + request.dataHandling.connection.totalClosedThreats);
-            Console.WriteLine("Message: " + e.Message);
-            
-            Console.WriteLine("\n________________________________________________________________");
-            Console.WriteLine("________________________________________________________________");
-            Console.WriteLine("________________________________________________________________\n");
+                request.dataHandler.connection.totalClosedThreats++;
         }
+        //}
+        //catch (Exception e)
+        //{
+        //    Console.WriteLine("________________________________________________________________");
+        //    Console.WriteLine("________________________________________________________________");
+        //    Console.WriteLine("________________________________________________________________\n\n");
+
+        //    Console.WriteLine("-FATAL ERROR-");
+        //    Console.WriteLine("Connection ID: " + request.dataHandler.connection.ID);
+        //    Console.WriteLine("Thread ID: " + request.dataHandler.threadID);
+        //    Console.WriteLine("Total threads on this Connection: " + request.dataHandler.connection.totalThreads);
+        //    Console.WriteLine("Total closed threads on this Connection: " + request.dataHandler.connection.totalClosedThreats);
+        //    Console.WriteLine("Requested file: " + request.Url);
+        //    Console.WriteLine("Message: " + e.Message);
+
+        //    Console.WriteLine("\n________________________________________________________________");
+        //    Console.WriteLine("________________________________________________________________");
+        //    Console.WriteLine("________________________________________________________________\n");
+        //}
+    }
+
+    public string GenerateUniqueClientCookie()
+    {
+        Random random = new Random();
+        return ((float)random.NextDouble()).ToString();
     }
 }

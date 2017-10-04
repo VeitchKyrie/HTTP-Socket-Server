@@ -32,7 +32,12 @@ public class Request
     /// <summary>
     /// The DataHandling instance that created this instace.
     /// </summary>
-    public DataHandling dataHandling;
+    public DataHandling dataHandler;
+
+    /// <summary>
+    /// The client's cookie;
+    /// </summary>
+    public string Cookie = "";
 
     /// <summary>
     /// Request Constructor.
@@ -40,7 +45,7 @@ public class Request
     /// <param name="data">The incomed data.</param>
     public Request (string data, DataHandling dataHandling)
     {
-        this.dataHandling = dataHandling;
+        this.dataHandler = dataHandling;
         ProcessWords(GetWords(data));
     }
 
@@ -68,11 +73,11 @@ public class Request
             words = joinedArrays;
         }
 
-        if (words.Length > 1)
+        if (words.Length > 1 && HttpServer.DebugLevel <= 1)
         {
-            Console.WriteLine("________________________________________________________________");
-            Console.WriteLine("\nConnection ID: " + dataHandling.connection.ID + ", Thread ID: " + dataHandling.threadID + "\nREQUEST: ");
+            Console.WriteLine("\nConnection ID: " + dataHandler.connection.ID + ", Thread ID: " + dataHandler.threadID + "\nREQUEST: ");
             Console.WriteLine(data);
+            Console.WriteLine("\n________________________________________________________________");
         }
         return words;
     }
@@ -133,7 +138,12 @@ public class Request
         int hostIndex = GetSpecificIndex("Host:", words);
         Host = words[hostIndex + 1];
 
-        Console.WriteLine("\n________________________________________________________________");
+        int cookieIndex = GetSpecificIndex("Cookie:", words);
+        if (cookieIndex != -1)
+        {
+            Cookie = words[cookieIndex + 1];
+            dataHandler.connection.Cookie = Cookie;
+        }
     }
 
     /// <summary>

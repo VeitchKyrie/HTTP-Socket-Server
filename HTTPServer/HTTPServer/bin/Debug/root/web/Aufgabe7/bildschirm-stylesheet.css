@@ -1,33 +1,45 @@
-* 
+@media screen 
 {
-    box-sizing: border-box;
-}
-div
-{
-    padding: 15px;
-}
-.header 
-{
-    border: 1px solid red;
-}
-.info 
-{
-    height: 500px;
-    width: 25%;
-    float: left;
-    border: 1px solid red;
-}
-.content 
-{
-    height: 500px;
-    width: 75%;
-    float: left;
-    border: 1px solid red;
-}
-.footer 
-{
-    width: 100%;
-    float: left;
-    border: 1px solid red;
-    margin-bottom: 10px;
+    *
+    {
+        font-family: 'Encode Sans Expanded', sans-serif;
+    }
+
+    img
+    {
+        border: 2px solid black;
+
+    }
+
+    div 
+    {
+        margin-left: 150px;
+        margin-right: 150px;
+        text-align: center;
+        font-size: 22px;
+    }
+
+    @media(min-width: 760px) 
+    {
+        body 
+        {
+            background-color: lightblue;
+        }
+    }
+
+    @media(max-width: 760px) 
+    {
+        body 
+        {
+            background-color: deepskyblue;
+        }
+    }
+
+    @media(max-width: 760px) and (max-height: 500px)
+    {
+        body 
+        {
+            background-color: blue;
+        }
+    }
 }

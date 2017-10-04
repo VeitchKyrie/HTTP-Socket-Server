@@ -61,7 +61,5 @@ public class DataHandling
         Request request = new Request(data, this);
         Response response = new Response(request);
         response.Post(connection.handler);
-
-        connection.totalClosedThreats++;
     }
 }
