@@ -48,9 +48,16 @@ public class ConnectionHandling
     /// </summary>
     public string Cookie = "";
 
-    Thread handleClient;
+    /// <summary>
+    /// The Thread that handles the Connection.
+    /// </summary>
+    Thread handleConnection;
 
-    int unhandleddata = 0;
+    /// <summary>
+    /// For debugging purposes. 
+    /// Total amount of threads that were skipped in the connection timeout process.
+    /// </summary>
+    int unhandledData = 0;
 
     /// <summary>
     /// The ConnectionHandling constructor.
@@ -62,9 +69,9 @@ public class ConnectionHandling
         this.handler = handler;
         ID = clientID;
 
-        handleClient = new Thread(HandleClient);
-        handleClient.IsBackground = false;
-        handleClient.Start();
+        handleConnection = new Thread(HandleConnection);
+        handleConnection.IsBackground = false;
+        handleConnection.Start();
 
         Thread timeOut = new Thread(ConectionTimeoutCheck);
         timeOut.Start();
@@ -74,7 +81,7 @@ public class ConnectionHandling
     /// Manages all incoming data from the connection.
     /// When new data arrives a new DataHandling instance is created.
     /// </summary>
-    void HandleClient()
+    void HandleConnection()
     {
         Closed = false;
 
@@ -101,7 +108,7 @@ public class ConnectionHandling
                 }
 
                 if (handled == 0)
-                    unhandleddata++;
+                    unhandledData++;
             }
         }
         catch (Exception e)
@@ -143,8 +150,8 @@ public class ConnectionHandling
                 if (timer > 100)
                 {
                     Closed = true;
-                    Console.WriteLine("ABORTED, " + unhandleddata + " data incomes have NOT been handled. Total threads: " + totalThreads + ", Finished Threads: " + totalClosedThreats);
-                    handleClient.Abort();
+                    Console.WriteLine("\nABORTED, " + unhandledData + " data incomes have NOT been handled. Total threads: " + totalThreads + ", Finished Threads: " + totalClosedThreats);
+                    handleConnection.Abort();
                     break;
                 }
             }

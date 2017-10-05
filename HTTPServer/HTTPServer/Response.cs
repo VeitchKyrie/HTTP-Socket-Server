@@ -176,8 +176,8 @@ public class Response
     /// <param name="handler">The Socket in which the data will be sent through.</param>
     public void Post(Socket handler)
     {
-        //try
-        //{
+        try
+        {
             if (request.Type != RequestType.UNDEFINED)
             {
                 NetworkStream stream = new NetworkStream(handler);
@@ -209,26 +209,26 @@ public class Response
                 }
 
                 request.dataHandler.connection.totalClosedThreats++;
+            }
         }
-        //}
-        //catch (Exception e)
-        //{
-        //    Console.WriteLine("________________________________________________________________");
-        //    Console.WriteLine("________________________________________________________________");
-        //    Console.WriteLine("________________________________________________________________\n\n");
+        catch (Exception e)
+        {
+            Console.WriteLine("________________________________________________________________");
+            Console.WriteLine("________________________________________________________________");
+            Console.WriteLine("________________________________________________________________\n\n");
 
-        //    Console.WriteLine("-FATAL ERROR-");
-        //    Console.WriteLine("Connection ID: " + request.dataHandler.connection.ID);
-        //    Console.WriteLine("Thread ID: " + request.dataHandler.threadID);
-        //    Console.WriteLine("Total threads on this Connection: " + request.dataHandler.connection.totalThreads);
-        //    Console.WriteLine("Total closed threads on this Connection: " + request.dataHandler.connection.totalClosedThreats);
-        //    Console.WriteLine("Requested file: " + request.Url);
-        //    Console.WriteLine("Message: " + e.Message);
+            Console.WriteLine("-FATAL ERROR-");
+            Console.WriteLine("Connection ID: " + request.dataHandler.connection.ID);
+            Console.WriteLine("Thread ID: " + request.dataHandler.threadID);
+            Console.WriteLine("Total threads on this Connection: " + request.dataHandler.connection.totalThreads);
+            Console.WriteLine("Total closed threads on this Connection: " + request.dataHandler.connection.totalClosedThreats);
+            Console.WriteLine("Requested file: " + request.Url);
+            Console.WriteLine("Message: " + e.Message);
 
-        //    Console.WriteLine("\n________________________________________________________________");
-        //    Console.WriteLine("________________________________________________________________");
-        //    Console.WriteLine("________________________________________________________________\n");
-        //}
+            Console.WriteLine("\n________________________________________________________________");
+            Console.WriteLine("________________________________________________________________");
+            Console.WriteLine("________________________________________________________________\n");
+        }
     }
 
     public string GenerateUniqueClientCookie()

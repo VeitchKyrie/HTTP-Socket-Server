@@ -8,19 +8,19 @@ using System.IO;
 public class HttpServer
 {
     /// <summary>
-    /// The Server name.
+    /// The server name.
     /// </summary>
     public const string SERVER_NAME = "BetoServer";
 
     /// <summary>
-    /// The Servers debug level.
-    /// </summary>
-    public const int DebugLevel = 2;
-
-    /// <summary>
     /// The used HTTP version.
     /// </summary>
-    public const string VERSION = "HTTP / 1.1";
+    public const string VERSION = "HTTP/1.1";
+
+    /// <summary>
+    /// The Servers debug level. The higher the debug level the higher the filtering level of debug information.
+    /// </summary>
+    public const int DebugLevel = 2;
 
     /// <summary>
     /// The error message's directory.
@@ -40,7 +40,7 @@ public class HttpServer
     /// <summary>
     /// The IP Adress used to create the localEndPoint.
     /// </summary>
-    public IPAddress ipAddress { get; private set; }
+    IPAddress ipAddress;
 
     /// <summary>
     /// The IPEndPoint the Socket will be binded to.
@@ -58,6 +58,11 @@ public class HttpServer
     bool running = false;
 
     /// <summary>
+    /// The server's main socket, creates a new socket for each new connection.
+    /// </summary>
+    Socket listener;
+
+    /// <summary>
     /// The HttpServer constructor.
     /// </summary>
     /// <param name="port">The port the server should connect through with its clients.</param>
@@ -65,8 +70,6 @@ public class HttpServer
     {
         this.port = port;
     }
-
-    Socket listener;
 
     /// <summary>
     /// Initializes the server and starts listening for incoming connections.
