@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Create new User</title>
+        <link rel="stylesheet" type="text/css" href="/Aufgabe2/2-CSSGrundlagen.css" />
+        <link rel="stylesheet" type="text/css" href="/Aufgabe3/3-EinfacheCSSBox.css" />
+        <link href="https://fonts.googleapis.com/css?family=Encode+Sans+Expanded:300&effect=shadow-multiple" rel="stylesheet">   
+     </head>
+<body>
+    <script>
+        function sendValues()
+        {
+            var xhttp = new XMLHttpRequest();
+
+            xhttp.onreadystatechange = function ()
+            {
+                if (this.status == 204)
+                {
+                    getUser();
+                }
+            };
+
+            if (birthdate.checkValidity() && birthdate.value != "")
+            {
+                xhttp.open("POST", "/api/user", true);
+                xhttp.setRequestHeader("Content-type", "text/xml");
+                xhttp.send("username:*" + username.value + "*name:*" + realname.value + "*birthdate:*" + birthdate.value);
+
+                username.value = "";
+                realname.value = "";
+                birthdate.value = "";
+                success.textContent = "User has been created successfully"
+            }
+            else
+            {
+                birthdate.value = birthdate.defaultValue;
+                success.textContent = "Error on creating a new user!"
+            }
+        }
+
+        function getUser()
+        {
+            var xhttp = new XMLHttpRequest();
+
+            xhttp.onreadystatechange = function ()
+            {
+                if (this.status == 200)
+                {
+                    document.getElementById("users").innerHTML = this.responseText;
+                }
+            };
+
+            xhttp.open("GET", "/api/users", true);
+            xhttp.setRequestHeader("Content-type", "text/xml");
+            xhttp.send();
+        }
+
+        function seeUser()
+        {
+            window.open("/api/user")
+        }
+    </script>
+    <h1 onloadstart="getUser()" class="font-effect-shadow-multiple">Create new user</h1>
+
+    <font>Username</font>
+    <input type="text" id="username" /><br />
+
+    <font>Complete Name</font>
+    <input type="text" id="realname"/>
+
+    <font>Birth date</font>
+    <input type="date" id="birthdate" /><br />
+
+    <button type="button" onclick="sendValues()">Create</button>
+
+    <br />
+    <font id="success"></font>
+    <br /><br />
+
+    <h1 class="font-effect-shadow-multiple">Users</h1>
+    <button type="button" onclick="getUser()">See Users</button>
+    <button type="button" onclick="seeUser()">See API output</button><br /><br />
+    <font id="users"></font>
+
+    <br /><br /><a href="/index.html"><img src="/img/yoda.jpg" style="width:300px; height:320px;"></a>
+</body>
+</html>

@@ -40,6 +40,13 @@ public class Request
     public string Cookie = "";
 
     /// <summary>
+    /// Only filled if request type is "POST".
+    /// </summary>
+    public string Content;
+
+    public bool ApiRequest = false;
+
+    /// <summary>
     /// Request Constructor.
     /// </summary>
     /// <param name="data">The incomed data.</param>
@@ -79,6 +86,9 @@ public class Request
             Console.WriteLine(data);
             Console.WriteLine("\n________________________________________________________________");
         }
+
+        string[] split = data.Split('\n');
+        Content = split[split.Length - 1];
         return words;
     }
 
@@ -96,6 +106,7 @@ public class Request
 
             case "POST":
                 Type = RequestType.POST;
+                Console.WriteLine("Content: " + Content);
                 break;
 
             case "PUT":
@@ -104,6 +115,7 @@ public class Request
 
             case "DELETE":
                 Type = RequestType.DELETE;
+                Console.WriteLine("Content: " + Content);
                 break;
 
             case "LINK":
@@ -131,6 +143,8 @@ public class Request
 
         if (Url == "/")
             Url = "/index.html";
+        else if (Url.StartsWith("/api/") || Url.StartsWith(@"\api\"))
+            ApiRequest = true;
 
         int mimesIndex = GetSpecificIndex("Accept:", words);
         Mimes = words[mimesIndex + 1].Split(',');

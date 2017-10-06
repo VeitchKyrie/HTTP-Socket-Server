@@ -7,6 +7,8 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml.Linq;
+
 
 /// <summary>
 /// Class that uses the gotten data from the Request class to generate and send a response to the client.
@@ -21,23 +23,23 @@ public class Response
     /// <summary>
     /// The bytes to be transmitted to the client.
     /// </summary>
-    byte[] bytedata;
+    public byte[] bytedata { get; private set; }
 
     /// <summary>
     /// The Response status. (e.g. 200 OK)
     /// </summary>
-    string status;
+    public string status { get; private set; }
 
     /// <summary>
     /// The Response mime. (e.g. text/html)
     /// </summary>
-    string mime;
+    public string mime { get; private set; }
 
     /// <summary>
     /// The Servers connection answer (either "close" or "keep-alive"). 
     /// Tells the client if it should close the connection after receiving the response or not.
     /// </summary>
-    string connection;
+    public string connection { get; private set; }
 
     /// <summary>
     /// Response constructor.
@@ -53,55 +55,79 @@ public class Response
     /// </summary>
     void ProcessRequest()
     {
-        try
+        //try
+        //{
+        XmlContent xmlContent;
+
+        switch (request.Type)
         {
-            switch (request.Type)
-            {
-                case RequestType.GET:
+            case RequestType.GET:
+                string file = Environment.CurrentDirectory + HttpServer.WEB_D + request.Url;
 
-                    string file = Environment.CurrentDirectory + HttpServer.WEB_D + request.Url;
+                if (HttpServer.DebugLevel <= 1)
+                    Console.WriteLine("Requested File: " + file);
+
+                mime = request.Mimes[0];
+
+                if (request.dataHandler.closeAfterResponse)
+                    connection = "close";
+                else
+                    connection = "keep-alive";
+
+                if (File.Exists(file))
+                {
                     if (HttpServer.DebugLevel <= 1)
-                        Console.WriteLine("Requested File: " + file);
-
-                    mime = request.Mimes[0];
-
-                    if (request.dataHandler.closeAfterResponse)
-                        connection = "close";
-                    else
-                        connection = "keep-alive";
-
-                    if (File.Exists(file))
+                        Console.WriteLine("Specified file exists.");
+                    bytedata = File.ReadAllBytes(file);
+                    status = "200";
+                }
+                else
+                {
+                    if (request.ApiRequest)
                     {
-                        if (HttpServer.DebugLevel <= 1)
-                            Console.WriteLine("Specified file exists.");
-                        bytedata = File.ReadAllBytes(file);
-                        status = "200";
+                        xmlContent = RestApi.HandleXmlGet(request.Url);
+                        bytedata = xmlContent.ByteData;
+                        status = xmlContent.Status;
+                    }
+                    else if (request.Url.StartsWith("/cgi-bin"))
+                    {
+                        Console.WriteLine("Running CGI Script.");
+                        GetCGIResult();
                     }
                     else
                     {
-                        if (request.Url.Contains("cgi-bin"))
-                        {
-                            Console.WriteLine("Running CGI Script.");
-                            GetCGIResult();
-                            return;
-                        }
-
                         Console.WriteLine("Specified file doesn't exist, sending Error 404. Requested File: " + request.Url);
 
                         file = Environment.CurrentDirectory + HttpServer.MSG_D + "/404.html";
                         bytedata = File.ReadAllBytes(file);
                         status = "404";
                     }
+                }
 
-                    if (HttpServer.DebugLevel <= 1)
-                        Console.WriteLine("Bytes gotten from file.");
-                    break;
-            }
+                if (HttpServer.DebugLevel <= 1)
+                    Console.WriteLine("Bytes gotten from file.");
+                break;
+
+            case RequestType.POST:
+
+                if (RestApi.HandleXmlPost(request.Url, request.Content))
+                    status = "204";
+                else
+                    SendInternErrorPage(null);
+                break;
+
+            case RequestType.DELETE:
+
+                xmlContent = RestApi.HandleXmlRemove(request.Url);
+                bytedata = xmlContent.ByteData;
+                status = xmlContent.Status;
+                break;
         }
-        catch(Exception e)
-        {
-            SendInternErrorPage(e);
-        }
+        //}
+        //catch(Exception e)
+        //{
+        //    SendInternErrorPage(e);
+        //}
     }
 
     /// <summary>
@@ -113,11 +139,7 @@ public class Response
         string path = Environment.CurrentDirectory + HttpServer.WEB_D + @"\cgi-bin\Build\";
         string argument = request.Url;
 
-        argument = argument.Replace("/", "");
-        argument = argument.Replace(@"\", "");
-
-        if (argument.StartsWith("cgi-bin"))
-            argument = argument.Substring(7);
+        argument = argument.Substring(9);
 
         Process createNewFile = new Process();
         createNewFile.StartInfo.FileName = path + "CGI.exe";
@@ -163,7 +185,10 @@ public class Response
     /// <param name="e"></param>
     void SendInternErrorPage(Exception e)
     {
-        Console.WriteLine("ERROR, sending code 500.\n" + e.Message);
+        if(e != null)
+            Console.WriteLine("ERROR, sending code 500.\n" + e.Message);
+        else
+            Console.WriteLine("ERROR, sending code 500.\n");
 
         string file = Environment.CurrentDirectory + HttpServer.MSG_D + "/500.html";
         bytedata = File.ReadAllBytes(file);
@@ -193,13 +218,14 @@ public class Response
                         request.dataHandler.connection.Cookie = GenerateUniqueClientCookie();
                     }
 
-                    Header += "Set - Cookie: " + request.dataHandler.connection.Cookie + "\r\n";
+                    Header += "Set - Cookie: id=" + request.dataHandler.connection.Cookie + "\r\n";
                 }
 
                 writer.WriteLine(Header);
 
                 writer.Flush();
-                stream.Write(bytedata, 0, bytedata.Length);
+                if(bytedata != null)
+                    stream.Write(bytedata, 0, bytedata.Length);
                 stream.Close();
 
                 if (HttpServer.DebugLevel <= 1)

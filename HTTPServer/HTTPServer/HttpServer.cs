@@ -20,7 +20,7 @@ public class HttpServer
     /// <summary>
     /// The Servers debug level. The higher the debug level the higher the filtering level of debug information.
     /// </summary>
-    public const int DebugLevel = 2;
+    public const int DebugLevel = 1;
 
     /// <summary>
     /// The error message's directory.
@@ -97,7 +97,7 @@ public class HttpServer
 
         // Bind the socket to the local endpoint and listen for incoming connections.
         listener.Bind(localEndPoint);
-        listener.Listen(10);
+        listener.Listen(500);
 
         Console.WriteLine("Server IP Adress: " + ipAddress);
         Console.WriteLine("Server Port: " + port + "\n");
