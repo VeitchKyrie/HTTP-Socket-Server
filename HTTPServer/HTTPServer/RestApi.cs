@@ -13,9 +13,10 @@ public class RestApi
     /// <summary>
     /// Used to generate a response for a "GET" request.
     /// </summary>
-    public static XmlContent HandleXmlGet(string urlinput)
+    public static XmlContent HandleXmlGet(Request request)
     {
-        string url = urlinput;
+        XmlContent result;
+        string url = request.Url;
 
         try
         {
@@ -45,7 +46,7 @@ public class RestApi
                 datatoadd = datatoadd.Replace(@"</birthdate>", "\"<br/>");
                 data += datatoadd;
             }
-            else if (!url.Substring(1).Contains(@"\") && !url.Contains("delete"))
+            else if (!url.Substring(1).Contains(@"\") && !url.Contains("delete") && !url.Contains("update"))
             {
                 node = doc.DocumentElement.SelectSingleNode("//user[username=\"" + url.Substring(1) + "\"]");
 
@@ -58,13 +59,34 @@ public class RestApi
                 datatoadd = datatoadd.Replace(@"</birthdate>", "\"<br/>");
                 data += datatoadd;
             }
-            else if (!url.Substring(1).Contains(@"\") && url.Contains("/delete") || url.Contains(@"\delete"))
+            else if (!url.Substring(1).Contains(@"\") && (url.Contains("/delete") || url.Contains(@"\delete")))
             {
-                return HandleXmlRemove(urlinput);
+                return HandleXmlRemove(request.Url);
+            }
+            else if (!url.Substring(1).Contains(@"\") && (url.Contains("/update") || url.Contains(@"\update")))
+            {
+                string[] refererwords = request.Url.Split('/');
+                string user = refererwords[refererwords.Length - 2];
+
+                node = doc.DocumentElement.SelectSingleNode("//user[username=\"" + user + "\"]");
+                if (node != null)
+                {
+                    result = new XmlContent();
+                    result.ByteData = File.ReadAllBytes(Environment.CurrentDirectory + HttpServer.WEB_D + @"/Aufgabe8/updateuser.html");
+                    result.Status = "200";
+                }
+                else
+                {
+                    result = new XmlContent();
+                    result.ByteData = Encoding.UTF8.GetBytes("The specified user doesn't exist, therefore it cannot be updated.");
+                    result.Status = "404";
+                }
+
+                return result;
             }
 
             data += footer;
-            XmlContent result = new XmlContent();
+            result = new XmlContent();
             result.ByteData = Encoding.UTF8.GetBytes(data);
             result.Status = "200";
 
@@ -72,7 +94,7 @@ public class RestApi
         }
         catch
         {
-            XmlContent result = new XmlContent();
+            result = new XmlContent();
             result.ByteData = Encoding.UTF8.GetBytes("Error: The database or the specified attribute doesn't exist yet, please specify existing attributes or create new users.");
             result.Status = "200";
             return result;
@@ -121,7 +143,7 @@ public class RestApi
 
     /// <summary>
     /// Used to generate a response for a "DELETE" request.
-    /// Deletes a user from the database if i exists.
+    /// Deletes a user from the database if it exists.
     /// </summary>
     public static XmlContent HandleXmlRemove(string url)
     {
@@ -153,6 +175,55 @@ public class RestApi
         catch
         {
             result.ByteData = Encoding.UTF8.GetBytes("Error on removing the specified user. Are you sure it exists?");
+            result.Status = "404";
+        }
+        return result;
+    }
+
+    /// <summary>
+    /// Used to generate a response for a "PUT" request.
+    /// Updates a user in the database if it exists.
+    /// </summary>
+    public static XmlContent HandleXmlPut(Request request)
+    {
+        XmlContent result = new XmlContent();
+        string[] contentwords = request.Content.Split('*');
+        string[] refererwords = request.Referer.Split('/');
+
+        string user = refererwords[refererwords.Length - 2];
+        Console.WriteLine(user);
+
+        try
+        {
+            string path = Environment.CurrentDirectory + HttpServer.WEB_D + @"\Aufgabe8\database.xml";
+
+            XmlDocument doc = new XmlDocument();
+            doc.Load(path);
+
+            XmlNode node;
+
+            node = doc.DocumentElement.SelectSingleNode("//user[username=\"" + user + "\"]");
+            XmlNodeList nodes = node.ChildNodes;
+
+            Console.WriteLine(node);
+
+            int index = 1;
+            for (int x = 0; x < nodes.Count; x++)
+            {
+                nodes.Item(x).InnerText = contentwords[index];
+                Console.WriteLine(nodes.Item(x).Name + ": old:" + contentwords[index] + ", new: " + nodes.Item(x).InnerText);
+                index += 2;
+            }
+
+            doc.Save(path);
+            
+
+            result.ByteData = Encoding.UTF8.GetBytes("User has been updated succesfully.");
+            result.Status = "200";
+        }
+        catch
+        {
+            result.ByteData = Encoding.UTF8.GetBytes("Error on updating the specified user. Are you sure it exists?");
             result.Status = "404";
         }
         return result;

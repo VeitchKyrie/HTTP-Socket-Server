@@ -25,6 +25,11 @@ public class Request
     public string Host;
 
     /// <summary>
+    /// The host's domain or IP adress, used for differentiating virtual hosts on a single server.
+    /// </summary>
+    public string Referer;
+
+    /// <summary>
     /// The Request mimes. (e.g. text/html, image/*)
     /// </summary>
     public string[] Mimes;
@@ -151,6 +156,9 @@ public class Request
 
         int hostIndex = GetSpecificIndex("Host:", words);
         Host = words[hostIndex + 1];
+
+        int refererIndex = GetSpecificIndex("Referer:", words);
+        Referer = words[refererIndex + 1];
 
         int cookieIndex = GetSpecificIndex("Cookie:", words);
         if (cookieIndex != -1)
