@@ -7,35 +7,8 @@
         <link href="https://fonts.googleapis.com/css?family=Encode+Sans+Expanded:300&effect=shadow-multiple" rel="stylesheet">   
      </head>
 <body>
-    <script>
-        function sendValues()
-        {
-            var xhttp = new XMLHttpRequest();
+    <script src="/Aufgabe8/client.js"></script>
 
-            xhttp.onreadystatechange = function ()
-            {
-                if (this.status == 200 || this.status == 404)
-                {
-                    document.getElementById("success").innerHTML = this.responseText;
-                }
-            };
-
-            if (birthdate.checkValidity() && birthdate.value != "")
-            {
-                xhttp.open("PUT", "/api/user", true);
-                xhttp.setRequestHeader("Content-type", "text/xml");
-                xhttp.send("username:*" + username.value + "*name:*" + realname.value + "*birthdate:*" + birthdate.value);
-
-                username.value = "";
-                realname.value = "";
-                birthdate.value = "";
-            }
-            else
-            {
-                birthdate.value = birthdate.defaultValue;
-            }
-        }
-    </script>
     <h1 class="font-effect-shadow-multiple">Update existing user</h1>
 
     <font>New Username</font>
@@ -47,7 +20,7 @@
     <font>New Birth date</font>
     <input type="date" id="birthdate" /><br />
 
-    <button type="button" onclick="sendValues()">Update</button>
+    <button type="button" onclick="sendValues('PUT', 'username:*' + username.value + '*name:*' + realname.value + '*birthdate:*' + birthdate.value, 'updat')">Update</button>
 
     <br />
     <font id="success"></font>
