@@ -181,7 +181,6 @@ public class Request
             if (words[x] == info)
                 return x;
         }
-
         return -1;
     }
 }

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Delete User</title>
+        <link rel="stylesheet" type="text/css" href="/Aufgabe2/2-CSSGrundlagen.css" />
+        <link rel="stylesheet" type="text/css" href="/Aufgabe3/3-EinfacheCSSBox.css" />
+        <link href="https://fonts.googleapis.com/css?family=Encode+Sans+Expanded:300&effect=shadow-multiple" rel="stylesheet">   
+     </head>
+<body>
+    <script>
+        function deleteUser()
+        {
+            var xhttp = new XMLHttpRequest();
+
+            xhttp.onreadystatechange = function ()
+            {
+                if (this.status == 200 || this.status == 404)
+                {
+                    document.getElementById("success").innerHTML = this.responseText;
+                }
+            };
+
+            xhttp.open("DELETE", "/api/user", true);
+            xhttp.setRequestHeader("Content-type", "text/xml");
+            xhttp.send();
+
+            username.value = "";
+            realname.value = "";
+            birthdate.value = "";
+        }
+
+        function goBack()
+        {
+            window.open("/Aufgabe8/instructions.html", "_self");
+        }
+    </script>
+    <h1 class="font-effect-shadow-multiple">Delete existing user</h1>
+
+    <font>Are you sure you want to delete the current user?</font>
+
+    <button type="button" onclick="deleteUser()">Delete</button>
+    <button type="button" onclick="goBack()">Go Back</button>
+
+    <br />
+    <font id="success"></font>
+    <br /><br />
+</body>
+</html>

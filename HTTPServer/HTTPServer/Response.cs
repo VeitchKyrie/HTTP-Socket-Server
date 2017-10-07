@@ -85,7 +85,7 @@ public class Response
                 {
                     if (request.ApiRequest)
                     {
-                        xmlContent = RestApi.HandleXmlGet(request);
+                        xmlContent = XmlHandler.HandleXmlGet(request);
                         bytedata = xmlContent.ByteData;
                         status = xmlContent.Status;
                     }
@@ -109,20 +109,20 @@ public class Response
                 break;
 
             case RequestType.POST:
-                if (RestApi.HandleXmlPost(request.Url, request.Content))
+                if (XmlHandler.HandleXmlPost(request.Url, request.Content))
                     status = "204";
                 else
                     SendInternErrorPage(null);
                 break;
 
             case RequestType.DELETE:
-                xmlContent = RestApi.HandleXmlRemove(request.Url);
+                xmlContent = XmlHandler.HandleXmlRemove(request);
                 bytedata = xmlContent.ByteData;
                 status = xmlContent.Status;
                 break;
 
             case RequestType.PUT:
-                xmlContent = RestApi.HandleXmlPut(request);
+                xmlContent = XmlHandler.HandleXmlPut(request);
                 bytedata = xmlContent.ByteData;
                 status = xmlContent.Status;
                 break;

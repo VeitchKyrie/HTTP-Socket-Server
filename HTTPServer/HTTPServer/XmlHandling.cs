@@ -4,7 +4,7 @@ using System.Text;
 using System.Xml;
 using System.Xml.Linq;
 
-public class RestApi
+public static class XmlHandler
 {
     const string header = "<!DOCTYPE html><html><body> ";
     const string footer = "</body></html>";
@@ -26,11 +26,11 @@ public class RestApi
             XmlDocument doc = new XmlDocument();
             doc.Load(path);
 
-            User[] users = new User[0];
             url = url.Replace("/api/users", "");
             url = url.Replace("/api/user", "");
             XmlNode node;
 
+            // Is the url "/api/user"?
             if (url == "")
             {
                 node = doc.DocumentElement.SelectSingleNode(@"/users");
@@ -46,23 +46,53 @@ public class RestApi
                 datatoadd = datatoadd.Replace(@"</birthdate>", "\"<br/>");
                 data += datatoadd;
             }
+
+            // Is the url "/api/user/[username]"?
             else if (!url.Substring(1).Contains(@"\") && !url.Contains("delete") && !url.Contains("update"))
             {
-                node = doc.DocumentElement.SelectSingleNode("//user[username=\"" + url.Substring(1) + "\"]");
+                string[] urlwords = url.Split('?');
+                string user = urlwords[0].Substring(1);
+                string[] tokens = new string[0];
 
+                node = doc.DocumentElement.SelectSingleNode("//user[username=\"" + user + "\"]");
                 string datatoadd = node.InnerXml;
-                datatoadd = datatoadd.Replace("<name>", "Name: \"");
-                datatoadd = datatoadd.Replace(@"</name>", "\" <br/>");
-                datatoadd = datatoadd.Replace("<username>", "User name: \"");
-                datatoadd = datatoadd.Replace(@"</username>", "\" <br/>");
-                datatoadd = datatoadd.Replace("<birthdate>", "Birthdate: \"");
-                datatoadd = datatoadd.Replace(@"</birthdate>", "\"<br/>");
+
+                if (urlwords.Length > 1)
+                {
+                    tokens = urlwords[1].Split('&');
+                    Console.WriteLine(urlwords[1]);
+                }
+
+                // Data is converted from xml style to a more readable form. If filter is on inforamtion is hidden accordingly.
+
+                if (urlwords.Length < 2 || CheckIfStringIsIncluded("username", tokens))
+                {
+                    datatoadd = datatoadd.Replace("<username>", "User name: \"");
+                    datatoadd = datatoadd.Replace(@"</username>", "\" <br/>");
+                }
+                else
+                    HideInfo("username", ref datatoadd);
+
+                if (urlwords.Length < 2 || CheckIfStringIsIncluded("name", tokens))
+                {
+                    datatoadd = datatoadd.Replace("<name>", "Name: \"");
+                    datatoadd = datatoadd.Replace(@"</name>", "\" <br/>");
+                }
+                else
+                    HideInfo("name", ref datatoadd);
+
+                if (urlwords.Length < 2 || CheckIfStringIsIncluded("birthdate", tokens))
+                {
+                    datatoadd = datatoadd.Replace("<birthdate>", "Birthdate: \"");
+                    datatoadd = datatoadd.Replace(@"</birthdate>", "\"<br/>");
+                }
+                else
+                     HideInfo("birthdate", ref datatoadd);
+
                 data += datatoadd;
             }
-            else if (!url.Substring(1).Contains(@"\") && (url.Contains("/delete") || url.Contains(@"\delete")))
-            {
-                return HandleXmlRemove(request.Url);
-            }
+
+            // Is the url "/api/user/[username]/update"?
             else if (!url.Substring(1).Contains(@"\") && (url.Contains("/update") || url.Contains(@"\update")))
             {
                 string[] refererwords = request.Url.Split('/');
@@ -81,7 +111,28 @@ public class RestApi
                     result.ByteData = Encoding.UTF8.GetBytes("The specified user doesn't exist, therefore it cannot be updated.");
                     result.Status = "404";
                 }
+                return result;
+            }
 
+            // Is the url "/api/user/[username]/delete"?
+            else if (!url.Substring(1).Contains(@"\") && (url.Contains("/delete") || url.Contains(@"\delete")))
+            {
+                string[] refererwords = request.Url.Split('/');
+                string user = refererwords[refererwords.Length - 2];
+
+                node = doc.DocumentElement.SelectSingleNode("//user[username=\"" + user + "\"]");
+                if (node != null)
+                {
+                    result = new XmlContent();
+                    result.ByteData = File.ReadAllBytes(Environment.CurrentDirectory + HttpServer.WEB_D + @"/Aufgabe8/deleteuser.html");
+                    result.Status = "200";
+                }
+                else
+                {
+                    result = new XmlContent();
+                    result.ByteData = Encoding.UTF8.GetBytes("The specified user doesn't exist, therefore it cannot be deleted.");
+                    result.Status = "404";
+                }
                 return result;
             }
 
@@ -107,13 +158,12 @@ public class RestApi
     /// </summary>
     public static bool HandleXmlPost(string url, string content)
     {
-        string[] words = content.Split('*');
         string path = Environment.CurrentDirectory + HttpServer.WEB_D + @"\Aufgabe8\database.xml";
+        string[] words = content.Split('*');
 
-        User newUser = new User();
-        newUser.username = words[1];
-        newUser.name = words[3];
-        newUser.birthdate = words[5];
+        string username = words[1];
+        string name = words[3];
+        string birthdate = words[5];
 
         XDocument doc;
         if (!File.Exists(path))
@@ -121,10 +171,9 @@ public class RestApi
             doc = new XDocument(
                 new XElement("users",
                     new XElement("user",
-                        new XElement("username", newUser.username),
-                        new XElement("name", newUser.name),
-                        new XElement("birthdate", newUser.birthdate))));
-            doc.Save(path);
+                        new XElement("username", username),
+                        new XElement("name", name),
+                        new XElement("birthdate", birthdate))));
         }
         else
         {
@@ -132,12 +181,11 @@ public class RestApi
 
             doc.Root.Add(
                     new XElement("user",
-                        new XElement("username", newUser.username),
-                        new XElement("name", newUser.name),
-                        new XElement("birthdate", newUser.birthdate)));
-
-            doc.Save(path);
+                        new XElement("username", username),
+                        new XElement("name", name),
+                        new XElement("birthdate", birthdate)));
         }
+        doc.Save(path);
         return true;
     }
 
@@ -145,7 +193,7 @@ public class RestApi
     /// Used to generate a response for a "DELETE" request.
     /// Deletes a user from the database if it exists.
     /// </summary>
-    public static XmlContent HandleXmlRemove(string url)
+    public static XmlContent HandleXmlRemove(Request request)
     {
         XmlContent result = new XmlContent();
 
@@ -156,18 +204,17 @@ public class RestApi
             XmlDocument doc = new XmlDocument();
             doc.Load(path);
 
-            url = url.Replace("/api/users", "");
-            url = url.Replace("/api/user", "");
-            url = url.Replace("/delete", "");
+            string[] contentwords = request.Content.Split('*');
+            string[] refererwords = request.Referer.Split('/');
+
+            string user = refererwords[refererwords.Length - 2];
+            Console.WriteLine(user);
             XmlNode node;
 
-            if (!url.Substring(1).Contains(@"\"))
-            {
-                node = doc.DocumentElement.SelectSingleNode("//user[username=\"" + url.Substring(1) + "\"]");
-                node.RemoveAll();
-                node.ParentNode.RemoveChild(node);
-                doc.Save(path);
-            }
+            node = doc.DocumentElement.SelectSingleNode("//user[username=\"" + user + "\"]");
+            node.RemoveAll();
+            node.ParentNode.RemoveChild(node);
+            doc.Save(path);
 
             result.ByteData = Encoding.UTF8.GetBytes("User has been removed succesfully.");
             result.Status = "200";
@@ -191,7 +238,6 @@ public class RestApi
         string[] refererwords = request.Referer.Split('/');
 
         string user = refererwords[refererwords.Length - 2];
-        Console.WriteLine(user);
 
         try
         {
@@ -217,7 +263,6 @@ public class RestApi
 
             doc.Save(path);
             
-
             result.ByteData = Encoding.UTF8.GetBytes("User has been updated succesfully.");
             result.Status = "200";
         }
@@ -228,17 +273,32 @@ public class RestApi
         }
         return result;
     }
+
+    static bool CheckIfStringIsIncluded(string token, string[] tokens)
+    {
+        foreach(string element in tokens)
+        {
+            if (element == token)
+                return true;
+        }
+        return false;
+    }
+
+    static void HideInfo(string info, ref string data)
+    {
+        data = data.Replace("<" + info + ">", "§");
+        data = data.Replace(@"</" + info + ">", "§");
+
+        string[] substrings = data.Split('§');
+        data = substrings[0] + substrings[2];
+    }
 }
 
+/// <summary>
+/// Class that is returned in some methods in the XmlHandler class. Specifies the http status and the bytes to be sent to the client as a response.
+/// </summary>
 public class XmlContent
 {
     public string Status;
     public byte[] ByteData;
-}
-
-public class User
-{
-    public string name;
-    public string username;
-    public string birthdate;
 }
