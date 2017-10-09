@@ -5,6 +5,9 @@ using System.Text;
 using System.Threading;
 using System.IO;
 
+/// <summary>
+/// Class that creates and initializes the HTTP Socket Server and looks for new connections.
+/// </summary>
 public class HttpServer
 {
     /// <summary>

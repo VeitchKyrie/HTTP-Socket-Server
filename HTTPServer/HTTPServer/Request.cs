@@ -25,11 +25,6 @@ public class Request
     public string Host;
 
     /// <summary>
-    /// The host's domain or IP adress, used for differentiating virtual hosts on a single server.
-    /// </summary>
-    public string Referer;
-
-    /// <summary>
     /// The Request mimes. (e.g. text/html, image/*)
     /// </summary>
     public string[] Mimes;
@@ -45,10 +40,13 @@ public class Request
     public string Cookie = "";
 
     /// <summary>
-    /// Only filled if request type is "POST".
+    /// The request's content. Can be empty.
     /// </summary>
     public string Content;
 
+    /// <summary>
+    /// If the url contains the api directory.
+    /// </summary>
     public bool ApiRequest = false;
 
     /// <summary>
@@ -111,7 +109,6 @@ public class Request
 
             case "POST":
                 Type = RequestType.POST;
-                Console.WriteLine("Content: " + Content);
                 break;
 
             case "PUT":
@@ -120,23 +117,6 @@ public class Request
 
             case "DELETE":
                 Type = RequestType.DELETE;
-                Console.WriteLine("Content: " + Content);
-                break;
-
-            case "LINK":
-                Type = RequestType.LINK;
-                break;
-
-            case "UNLINK":
-                Type = RequestType.UNLINK;
-                break;
-
-            case "TRACE":
-                Type = RequestType.TRACE;
-                break;
-
-            case "OPTIONS":
-                Type = RequestType.OPTIONS;
                 break;
 
             default:
@@ -156,9 +136,6 @@ public class Request
 
         int hostIndex = GetSpecificIndex("Host:", words);
         Host = words[hostIndex + 1];
-
-        int refererIndex = GetSpecificIndex("Referer:", words);
-        Referer = words[refererIndex + 1];
 
         int cookieIndex = GetSpecificIndex("Cookie:", words);
         if (cookieIndex != -1)
@@ -185,7 +162,6 @@ public class Request
     }
 }
 
-
 /// <summary>
 /// The Request type enum of a Request. It's normally GET, but whatever.
 /// </summary>
@@ -195,9 +171,9 @@ public enum RequestType
     POST,
     PUT,
     DELETE,
-    LINK,
-    UNLINK,
-    TRACE,
-    OPTIONS,
+    //LINK,
+    //UNLINK,
+    //TRACE,
+    //OPTIONS,
     UNDEFINED
 }

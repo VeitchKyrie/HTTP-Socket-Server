@@ -4,10 +4,12 @@ using System.Text;
 using System.Xml;
 using System.Xml.Linq;
 
+/// <summary>
+/// Class that makes the server's REST Api work. 
+/// GET, POST, PUT and DELETE Requests are managed modifying the database accordingly.
+/// </summary>
 public static class XmlHandler
 {
-    const string header = "<!DOCTYPE html><html><body> ";
-    const string footer = "</body></html>";
     const string tab = "&nbsp&nbsp&nbsp&nbsp";
 
     /// <summary>
@@ -20,45 +22,45 @@ public static class XmlHandler
         try
         {
             string path = Environment.CurrentDirectory + HttpServer.WEB_D + @"\Aufgabe8\database.xml";
-            string data = header;
 
             XmlDocument doc = new XmlDocument();
             doc.Load(path);
 
             XmlNode node = doc.DocumentElement.SelectSingleNode(@"/users");
 
-            string datatoadd = node.InnerXml;
+            string data = node.InnerXml;
 
-            datatoadd = datatoadd.Replace("<user>", "-User-<br/>");
-            datatoadd = datatoadd.Replace("</user>", "<br/>");
+            data = data.Replace("<user>", "-User-<br/>");
+            data = data.Replace("</user>", "<br/>");
+
+            // Format XML data to an easyly-readable form and react to the specified filter.
 
             if (!request.Url.Contains("/name") && !request.Url.Contains("/birthdate"))
             {
-                datatoadd = datatoadd.Replace("<username>", "User name: \"");
-                datatoadd = datatoadd.Replace(@"</username>", "\" <br/>");
+                data = data.Replace("<username>", "User name: \"");
+                data = data.Replace(@"</username>", "\" <br/>");
             }
             else
-                HideInfo("username", ref datatoadd);
+                HideInfo("username", ref data);
 
             if (!request.Url.Contains("/username") && !request.Url.Contains("/birthdate"))
             {
-                datatoadd = datatoadd.Replace("<name>", "Name: \"");
-                datatoadd = datatoadd.Replace(@"</name>", "\" <br/>");
+                data = data.Replace("<name>", "Name: \"");
+                data = data.Replace(@"</name>", "\" <br/>");
             }
             else
-                HideInfo("name", ref datatoadd);
+                HideInfo("name", ref data);
 
             if (!request.Url.Contains("/username") && !request.Url.Contains("/name"))
             {
-                datatoadd = datatoadd.Replace("<birthdate>", "Birthdate: \"");
-                datatoadd = datatoadd.Replace(@"</birthdate>", "\"<br/>");
+                data = data.Replace("<birthdate>", "Birthdate: \"");
+                data = data.Replace(@"</birthdate>", "\"<br/>");
             }
             else
-                HideInfo("birthdate", ref datatoadd);
+                HideInfo("birthdate", ref data);
 
-            data += datatoadd;
+            // Return data converted into bytes and the status.
 
-            data += footer;
             result = new XmlContent();
             result.ByteData = Encoding.UTF8.GetBytes(data);
             result.Status = "200";
@@ -133,12 +135,6 @@ public static class XmlHandler
 
             string[] contentwords = request.Content.Split('*');
             string user = contentwords[1];
-            Console.WriteLine(user);
-
-            string[] newData = new string[contentwords.Length - 2];
-
-            for (int x = 2; x < contentwords.Length; x++)
-                newData[x - 2] = contentwords[x];
 
             XmlNode node = doc.DocumentElement.SelectSingleNode("//user[username=\"" + user + "\"]");
 
@@ -182,8 +178,6 @@ public static class XmlHandler
             XmlNode node = doc.DocumentElement.SelectSingleNode("//user[username=\"" + user + "\"]");
             XmlNodeList nodes = node.ChildNodes;
 
-            Console.WriteLine(node);
-
             int index = 1;
             for (int x = 0; x < nodes.Count; x++)
             {
@@ -205,6 +199,11 @@ public static class XmlHandler
         return result;
     }
 
+    /// <summary>
+    /// Hides a Xml node completely from a string.
+    /// </summary>
+    /// <param name="info">The name of the node to be hidden</param>
+    /// <param name="data">The string where the node will be hidden</param>
     static void HideInfo(string info, ref string data)
     {
         data = data.Replace("<" + info + ">", "§");
@@ -222,7 +221,7 @@ public static class XmlHandler
 }
 
 /// <summary>
-/// Class that is returned in some methods in the XmlHandler class. Specifies the http status and the bytes to be sent to the client as a response.
+/// Class that is returned in all methods in the XmlHandler class. Specifies the http status and the bytes to be sent to the client as a response.
 /// </summary>
 public class XmlContent
 {

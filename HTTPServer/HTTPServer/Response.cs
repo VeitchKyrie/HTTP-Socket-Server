@@ -55,82 +55,82 @@ public class Response
     /// </summary>
     void ProcessRequest()
     {
-        //try
-        //{
-        XmlContent xmlContent;
-
-        switch (request.Type)
+        try
         {
-            case RequestType.GET:
-                string file = Environment.CurrentDirectory + HttpServer.WEB_D + request.Url;
+            mime = request.Mimes[0];
 
-                if (HttpServer.DebugLevel <= 1)
-                    Console.WriteLine("Requested File: " + file);
+            if (request.dataHandler.closeAfterResponse)
+                connection = "close";
+            else
+                connection = "keep-alive";
 
-                mime = request.Mimes[0];
+            XmlContent xmlContent;
 
-                if (request.dataHandler.closeAfterResponse)
-                    connection = "close";
-                else
-                    connection = "keep-alive";
+            switch (request.Type)
+            {
+                case RequestType.GET:
+                    string file = Environment.CurrentDirectory + HttpServer.WEB_D + request.Url;
 
-                if (File.Exists(file))
-                {
                     if (HttpServer.DebugLevel <= 1)
-                        Console.WriteLine("Specified file exists.");
-                    bytedata = File.ReadAllBytes(file);
-                    status = "200";
-                }
-                else
-                {
-                    if (request.ApiRequest)
+                        Console.WriteLine("Requested File: " + file);
+
+                    if (File.Exists(file))
                     {
-                        xmlContent = XmlHandler.HandleXmlGet(request);
-                        bytedata = xmlContent.ByteData;
-                        status = xmlContent.Status;
-                    }
-                    else if (request.Url.StartsWith("/cgi-bin"))
-                    {
-                        Console.WriteLine("Running CGI Script.");
-                        GetCGIResult();
+                        if (HttpServer.DebugLevel <= 1)
+                            Console.WriteLine("Specified file exists.");
+                        bytedata = File.ReadAllBytes(file);
+                        status = "200";
                     }
                     else
                     {
-                        Console.WriteLine("Specified file doesn't exist, sending Error 404. Requested File: " + request.Url);
+                        if (request.ApiRequest)
+                        {
+                            xmlContent = XmlHandler.HandleXmlGet(request);
+                            bytedata = xmlContent.ByteData;
+                            status = xmlContent.Status;
+                        }
+                        else if (request.Url.StartsWith("/cgi-bin"))
+                        {
+                            Console.WriteLine("Running CGI Script.");
+                            GetCGIResult();
+                        }
+                        else
+                        {
+                            Console.WriteLine("Specified file doesn't exist, sending Error 404. Requested File: " + request.Url);
 
-                        file = Environment.CurrentDirectory + HttpServer.MSG_D + "/404.html";
-                        bytedata = File.ReadAllBytes(file);
-                        status = "404";
+                            file = Environment.CurrentDirectory + HttpServer.MSG_D + "/404.html";
+                            bytedata = File.ReadAllBytes(file);
+                            status = "404";
+                        }
                     }
-                }
 
-                if (HttpServer.DebugLevel <= 1)
-                    Console.WriteLine("Bytes gotten from file.");
-                break;
+                    if (HttpServer.DebugLevel <= 1)
+                        Console.WriteLine("Bytes gotten from file.");
+                    break;
 
-            case RequestType.POST:
-                xmlContent = XmlHandler.HandleXmlPost(request.Url, request.Content);
-                bytedata = xmlContent.ByteData;
-                status = xmlContent.Status;
-                break;
+                case RequestType.POST:
+                    xmlContent = XmlHandler.HandleXmlPost(request.Url, request.Content);
+                    bytedata = xmlContent.ByteData;
+                    status = xmlContent.Status;
+                    break;
 
-            case RequestType.DELETE:
-                xmlContent = XmlHandler.HandleXmlRemove(request);
-                bytedata = xmlContent.ByteData;
-                status = xmlContent.Status;
-                break;
+                case RequestType.DELETE:
+                    xmlContent = XmlHandler.HandleXmlRemove(request);
+                    bytedata = xmlContent.ByteData;
+                    status = xmlContent.Status;
+                    break;
 
-            case RequestType.PUT:
-                xmlContent = XmlHandler.HandleXmlPut(request);
-                bytedata = xmlContent.ByteData;
-                status = xmlContent.Status;
-                break;
+                case RequestType.PUT:
+                    xmlContent = XmlHandler.HandleXmlPut(request);
+                    bytedata = xmlContent.ByteData;
+                    status = xmlContent.Status;
+                    break;
+            }
         }
-        //}
-        //catch(Exception e)
-        //{
-        //    SendInternErrorPage(e);
-        //}
+        catch (Exception e)
+        {
+            SendInternErrorPage(e);
+        }
     }
 
     /// <summary>
@@ -217,9 +217,7 @@ public class Response
                 if (request.Cookie == "")
                 {
                     if (request.dataHandler.connection.Cookie == "")
-                    {
-                        request.dataHandler.connection.Cookie = GenerateUniqueClientCookie();
-                    }
+                        request.dataHandler.connection.Cookie = CreateUniqueClientCookie();
 
                     Header += "Set - Cookie: id=" + request.dataHandler.connection.Cookie + "\r\n";
                 }
@@ -260,9 +258,12 @@ public class Response
         }
     }
 
-    public string GenerateUniqueClientCookie()
+    /// <summary>
+    /// Creates an unique client ID to be sent as a cookie.
+    /// </summary>
+    public string CreateUniqueClientCookie()
     {
         Random random = new Random();
-        return ((float)random.NextDouble()).ToString();
+        return ("id=" + (float)random.NextDouble()).ToString();
     }
 }
