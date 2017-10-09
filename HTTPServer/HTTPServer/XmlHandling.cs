@@ -16,7 +16,6 @@ public static class XmlHandler
     public static XmlContent HandleXmlGet(Request request)
     {
         XmlContent result;
-        string url = request.Url;
 
         try
         {
@@ -26,115 +25,38 @@ public static class XmlHandler
             XmlDocument doc = new XmlDocument();
             doc.Load(path);
 
-            url = url.Replace("/api/users", "");
-            url = url.Replace("/api/user", "");
-            XmlNode node;
+            XmlNode node = doc.DocumentElement.SelectSingleNode(@"/users");
 
-            // Is the url "/api/user"?
-            if (url == "")
+            string datatoadd = node.InnerXml;
+
+            datatoadd = datatoadd.Replace("<user>", "-User-<br/>");
+            datatoadd = datatoadd.Replace("</user>", "<br/>");
+
+            if (!request.Url.Contains("/name") && !request.Url.Contains("/birthdate"))
             {
-                node = doc.DocumentElement.SelectSingleNode(@"/users");
-
-                string datatoadd = node.InnerXml;
-                datatoadd = datatoadd.Replace("<user>", "User: <br/>");
-                datatoadd = datatoadd.Replace(@"</user>", "<br/>");
-                datatoadd = datatoadd.Replace("<name>", tab + "Name: \"");
-                datatoadd = datatoadd.Replace(@"</name>", "\" <br/>");
-                datatoadd = datatoadd.Replace("<username>", tab + "User name: \"");
+                datatoadd = datatoadd.Replace("<username>", "User name: \"");
                 datatoadd = datatoadd.Replace(@"</username>", "\" <br/>");
-                datatoadd = datatoadd.Replace("<birthdate>", tab + "Birthdate: \"");
+            }
+            else
+                HideInfo("username", ref datatoadd);
+
+            if (!request.Url.Contains("/username") && !request.Url.Contains("/birthdate"))
+            {
+                datatoadd = datatoadd.Replace("<name>", "Name: \"");
+                datatoadd = datatoadd.Replace(@"</name>", "\" <br/>");
+            }
+            else
+                HideInfo("name", ref datatoadd);
+
+            if (!request.Url.Contains("/username") && !request.Url.Contains("/name"))
+            {
+                datatoadd = datatoadd.Replace("<birthdate>", "Birthdate: \"");
                 datatoadd = datatoadd.Replace(@"</birthdate>", "\"<br/>");
-                data += datatoadd;
             }
+            else
+                HideInfo("birthdate", ref datatoadd);
 
-            // Is the url "/api/user/[username]"?
-            else if (!url.Substring(1).Contains(@"\") && !url.Contains("delete") && !url.Contains("update"))
-            {
-                string[] urlwords = url.Split('?');
-                string user = urlwords[0].Substring(1);
-                string[] tokens = new string[0];
-
-                node = doc.DocumentElement.SelectSingleNode("//user[username=\"" + user + "\"]");
-                string datatoadd = node.InnerXml;
-
-                if (urlwords.Length > 1)
-                {
-                    tokens = urlwords[1].Split('&');
-                    Console.WriteLine(urlwords[1]);
-                }
-
-                // Data is converted from xml style to a more readable form. If filter is on inforamtion is hidden accordingly.
-
-                if (urlwords.Length < 2 || CheckIfStringIsIncluded("username", tokens))
-                {
-                    datatoadd = datatoadd.Replace("<username>", "User name: \"");
-                    datatoadd = datatoadd.Replace(@"</username>", "\" <br/>");
-                }
-                else
-                    HideInfo("username", ref datatoadd);
-
-                if (urlwords.Length < 2 || CheckIfStringIsIncluded("name", tokens))
-                {
-                    datatoadd = datatoadd.Replace("<name>", "Name: \"");
-                    datatoadd = datatoadd.Replace(@"</name>", "\" <br/>");
-                }
-                else
-                    HideInfo("name", ref datatoadd);
-
-                if (urlwords.Length < 2 || CheckIfStringIsIncluded("birthdate", tokens))
-                {
-                    datatoadd = datatoadd.Replace("<birthdate>", "Birthdate: \"");
-                    datatoadd = datatoadd.Replace(@"</birthdate>", "\"<br/>");
-                }
-                else
-                     HideInfo("birthdate", ref datatoadd);
-
-                data += datatoadd;
-            }
-
-            // Is the url "/api/user/[username]/update"?
-            else if (!url.Substring(1).Contains(@"\") && (url.Contains("/update") || url.Contains(@"\update")))
-            {
-                string[] refererwords = request.Url.Split('/');
-                string user = refererwords[refererwords.Length - 2];
-
-                node = doc.DocumentElement.SelectSingleNode("//user[username=\"" + user + "\"]");
-                if (node != null)
-                {
-                    result = new XmlContent();
-                    result.ByteData = File.ReadAllBytes(Environment.CurrentDirectory + HttpServer.WEB_D + @"/Aufgabe8/updateuser.html");
-                    result.Status = "200";
-                }
-                else
-                {
-                    result = new XmlContent();
-                    result.ByteData = Encoding.UTF8.GetBytes("The specified user doesn't exist, therefore it cannot be updated.");
-                    result.Status = "404";
-                }
-                return result;
-            }
-
-            // Is the url "/api/user/[username]/delete"?
-            else if (!url.Substring(1).Contains(@"\") && (url.Contains("/delete") || url.Contains(@"\delete")))
-            {
-                string[] refererwords = request.Url.Split('/');
-                string user = refererwords[refererwords.Length - 2];
-
-                node = doc.DocumentElement.SelectSingleNode("//user[username=\"" + user + "\"]");
-                if (node != null)
-                {
-                    result = new XmlContent();
-                    result.ByteData = File.ReadAllBytes(Environment.CurrentDirectory + HttpServer.WEB_D + @"/Aufgabe8/deleteuser.html");
-                    result.Status = "200";
-                }
-                else
-                {
-                    result = new XmlContent();
-                    result.ByteData = Encoding.UTF8.GetBytes("The specified user doesn't exist, therefore it cannot be deleted.");
-                    result.Status = "404";
-                }
-                return result;
-            }
+            data += datatoadd;
 
             data += footer;
             result = new XmlContent();
@@ -156,8 +78,10 @@ public static class XmlHandler
     /// Used to generate a response for a "POST" request.
     /// Addes a new user to the database or creates it if it doesn't exist.
     /// </summary>
-    public static bool HandleXmlPost(string url, string content)
+    public static XmlContent HandleXmlPost(string url, string content)
     {
+        XmlContent result = new XmlContent();
+
         string path = Environment.CurrentDirectory + HttpServer.WEB_D + @"\Aufgabe8\database.xml";
         string[] words = content.Split('*');
 
@@ -186,7 +110,10 @@ public static class XmlHandler
                         new XElement("birthdate", birthdate)));
         }
         doc.Save(path);
-        return true;
+
+        result.Status = "200";
+        result.ByteData = Encoding.UTF8.GetBytes("User has been created succesfully.");
+        return result;
     }
 
     /// <summary>
@@ -205,13 +132,16 @@ public static class XmlHandler
             doc.Load(path);
 
             string[] contentwords = request.Content.Split('*');
-            string[] refererwords = request.Referer.Split('/');
-
-            string user = refererwords[refererwords.Length - 2];
+            string user = contentwords[1];
             Console.WriteLine(user);
-            XmlNode node;
 
-            node = doc.DocumentElement.SelectSingleNode("//user[username=\"" + user + "\"]");
+            string[] newData = new string[contentwords.Length - 2];
+
+            for (int x = 2; x < contentwords.Length; x++)
+                newData[x - 2] = contentwords[x];
+
+            XmlNode node = doc.DocumentElement.SelectSingleNode("//user[username=\"" + user + "\"]");
+
             node.RemoveAll();
             node.ParentNode.RemoveChild(node);
             doc.Save(path);
@@ -235,9 +165,12 @@ public static class XmlHandler
     {
         XmlContent result = new XmlContent();
         string[] contentwords = request.Content.Split('*');
-        string[] refererwords = request.Referer.Split('/');
+        string user = contentwords[1];
 
-        string user = refererwords[refererwords.Length - 2];
+        string[] newData = new string[contentwords.Length - 2];
+
+        for (int x = 2; x < contentwords.Length; x++)
+            newData[x - 2] = contentwords[x];
 
         try
         {
@@ -246,9 +179,7 @@ public static class XmlHandler
             XmlDocument doc = new XmlDocument();
             doc.Load(path);
 
-            XmlNode node;
-
-            node = doc.DocumentElement.SelectSingleNode("//user[username=\"" + user + "\"]");
+            XmlNode node = doc.DocumentElement.SelectSingleNode("//user[username=\"" + user + "\"]");
             XmlNodeList nodes = node.ChildNodes;
 
             Console.WriteLine(node);
@@ -256,8 +187,8 @@ public static class XmlHandler
             int index = 1;
             for (int x = 0; x < nodes.Count; x++)
             {
-                nodes.Item(x).InnerText = contentwords[index];
-                Console.WriteLine(nodes.Item(x).Name + ": old:" + contentwords[index] + ", new: " + nodes.Item(x).InnerText);
+                nodes.Item(x).InnerText = newData[index];
+                Console.WriteLine(nodes.Item(x).Name + ": old:" + newData[index] + ", new: " + nodes.Item(x).InnerText);
                 index += 2;
             }
 
@@ -274,23 +205,19 @@ public static class XmlHandler
         return result;
     }
 
-    static bool CheckIfStringIsIncluded(string token, string[] tokens)
-    {
-        foreach(string element in tokens)
-        {
-            if (element == token)
-                return true;
-        }
-        return false;
-    }
-
     static void HideInfo(string info, ref string data)
     {
         data = data.Replace("<" + info + ">", "§");
         data = data.Replace(@"</" + info + ">", "§");
 
         string[] substrings = data.Split('§');
-        data = substrings[0] + substrings[2];
+
+        data = "";
+
+        for(int x = 0; x < substrings.Length; x += 2)
+        {
+            data += substrings[x];
+        }
     }
 }
 

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Manage Users</title>
+        <link rel="stylesheet" type="text/css" href="/Aufgabe2/2-CSSGrundlagen.css" />
+        <link rel="stylesheet" type="text/css" href="/Aufgabe3/3-EinfacheCSSBox.css" />
+        <link href="https://fonts.googleapis.com/css?family=Encode+Sans+Expanded:300&effect=shadow-multiple" rel="stylesheet">   
+     </head>
+     <body>
+        <script src="client.js"></script>
+
+        <select onchange="crudTypeChanged(this)">
+            <option>Create User</option>
+            <option>Update User</option>
+            <option>Delete User</option>
+        </select>
+
+        <div id="createUser">
+            <h1 class="font-effect-shadow-multiple">Create a new User</h1>
+
+            <font>Username</font>
+            <input type="text" id="Cusername" /><br />
+
+            <font>Complete Name</font>
+            <input type="text" id="Crealname" />
+
+            <font>Birth date</font>
+            <input type="date" id="Cbirthdate" /><br />
+
+            <button type="button" onclick="sendValues('POST', 'username:*' + Cusername.value + '*name:*' + Crealname.value + '*birthdate:*' + Cbirthdate.value, 'creat', 'success')">Create</button>
+        </div>
+
+        <div id="updateUser" style="display: none">
+            <h1 class="font-effect-shadow-multiple">Update an existing user</h1>
+
+            <font>Old Username</font>
+            <input type="text" id="Uoldusername" /><br />
+
+            <font>New Username</font>
+            <input type="text" id="Uusername" /><br />
+
+            <font>New Complete Name</font>
+            <input type="text" id="Urealname" />
+
+            <font>New Birth date</font>
+            <input type="date" id="Ubirthdate" /><br />
+
+            <button type="button" onclick="sendValues('PUT', 'oldusername:*' + Uoldusername.value + '*username:*' + Uusername.value + '*name:*' + Urealname.value + '*birthdate:*' + Ubirthdate.value, 'updat', 'success')">Update</button>
+        </div>
+
+        <div id="deleteUser" style="display: none">
+            <h1 class="font-effect-shadow-multiple">Delete an existing user</h1>
+
+            <font>Username</font>
+            <input type="text" id="Dusername" /><br />
+
+            <button type="button" onclick="sendValues('DELETE', 'username:*' + Dusername.value, 'delet', 'success')">Delete</button>
+        </div>
+
+        <br />
+        <font id="success"></font>
+        <br />
+
+        <h1 class="font-effect-shadow-multiple">Users</h1>
+
+         <select onchange="filterTypeChanged(this)">
+             <option>No Filter</option>
+             <option>User name</option>
+             <option>Name</option>
+             <option>Birthdate</option>
+         </select>
+
+         <br />
+         <br />
+
+         <font id="users" onshow="sendValues('GET', '', 'get', 'users')"></font>
+
+        <br />
+        <br />
+
+        <a href="/index.html"><img src="/img/yoda.jpg" style="width:300px; height:320px;"></a>
+    </body>
+</html>

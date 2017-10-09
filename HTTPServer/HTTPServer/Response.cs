@@ -109,10 +109,9 @@ public class Response
                 break;
 
             case RequestType.POST:
-                if (XmlHandler.HandleXmlPost(request.Url, request.Content))
-                    status = "204";
-                else
-                    SendInternErrorPage(null);
+                xmlContent = XmlHandler.HandleXmlPost(request.Url, request.Content);
+                bytedata = xmlContent.ByteData;
+                status = xmlContent.Status;
                 break;
 
             case RequestType.DELETE:
