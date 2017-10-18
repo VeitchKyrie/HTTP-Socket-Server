@@ -46,7 +46,7 @@ public class HttpServer
     IPAddress ipAddress;
 
     /// <summary>
-    /// The IPEndPoint the Socket will be binded to.
+    /// The IPEndPoint the Socket will be bound to.
     /// </summary>
     IPEndPoint localEndPoint;
 
