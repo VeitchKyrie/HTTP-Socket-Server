@@ -49,7 +49,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Request.cs" />
     <Compile Include="Response.cs" />
-    <Compile Include="XmlHandling.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

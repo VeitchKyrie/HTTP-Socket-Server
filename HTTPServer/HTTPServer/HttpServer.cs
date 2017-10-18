@@ -13,17 +13,12 @@ public class HttpServer
     /// <summary>
     /// The server name.
     /// </summary>
-    public const string SERVER_NAME = "BetoServer";
+    public const string SERVER_NAME = "PascalServer";
 
     /// <summary>
     /// The used HTTP version.
     /// </summary>
     public const string VERSION = "HTTP/1.1";
-
-    /// <summary>
-    /// The Servers debug level. The higher the debug level the higher the filtering level of debug information.
-    /// </summary>
-    public const int DebugLevel = 1;
 
     /// <summary>
     /// The error message's directory.
@@ -113,10 +108,7 @@ public class HttpServer
     {
         while (true)
         {
-            if(DebugLevel <= 0)
-            { 
-                Console.WriteLine("\nHandled Connections: " + totalConnections + " Waiting for a connection...");
-            }
+            Console.WriteLine("\nHandled Connections: " + totalConnections + " Waiting for a connection...");
 
             Socket handler = listener.Accept();
 

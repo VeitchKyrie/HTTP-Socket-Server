@@ -28,27 +28,19 @@ public class DataHandling
     public uint threadID;
 
     /// <summary>
-    /// If the server should tell the client to close the connection after the following response or not.
-    /// </summary>
-    public bool closeAfterResponse;
-
-    /// <summary>
     /// Constructor of the DataHandling class. Saves the parameters and starts a new Thread.
     /// </summary>
     /// <param name="data">The incoming data.</param>
     /// <param name="connection">The ConnectionHandling instance that is creating this instance.</param>
     /// <param name="closeAfterResponse">If the server should tell the client to close the connection after the following response or not.</param>
-    public DataHandling(string data, ConnectionHandling connection, bool closeAfterResponse)
+    public DataHandling(string data, ConnectionHandling connection)
     {
-        this.closeAfterResponse = closeAfterResponse;
         this.data = data;
         this.connection = connection;
 
         Thread handleData = new Thread(HandleData);
         handleData.IsBackground = false;
         handleData.Start();
-
-        threadID = connection.totalThreads;
     }
 
     /// <summary>

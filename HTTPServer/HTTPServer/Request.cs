@@ -20,11 +20,6 @@ public class Request
     public string Url;
 
     /// <summary>
-    /// The host's domain or IP adress, used for differentiating virtual hosts on a single server.
-    /// </summary>
-    public string Host;
-
-    /// <summary>
     /// The Request mimes. (e.g. text/html, image/*)
     /// </summary>
     public string[] Mimes;
@@ -35,19 +30,9 @@ public class Request
     public DataHandling dataHandler;
 
     /// <summary>
-    /// The client's cookie;
-    /// </summary>
-    public string Cookie = "";
-
-    /// <summary>
     /// The request's content. Can be empty.
     /// </summary>
     public string Content;
-
-    /// <summary>
-    /// If the url contains the api directory.
-    /// </summary>
-    public bool ApiRequest = false;
 
     /// <summary>
     /// Request Constructor.
@@ -83,12 +68,9 @@ public class Request
             words = joinedArrays;
         }
 
-        if (words.Length > 1 && HttpServer.DebugLevel <= 1)
-        {
-            Console.WriteLine("\nConnection ID: " + dataHandler.connection.ID + ", Thread ID: " + dataHandler.threadID + "\nREQUEST: ");
-            Console.WriteLine(data);
-            Console.WriteLine("\n________________________________________________________________");
-        }
+        Console.WriteLine("\nConnection ID: " + dataHandler.connection.ID + ", Thread ID: " + dataHandler.threadID + "\nREQUEST: ");
+        Console.WriteLine(data);
+        Console.WriteLine("\n________________________________________________________________");
 
         string[] split = data.Split('\n');
         Content = split[split.Length - 1];
@@ -128,21 +110,9 @@ public class Request
 
         if (Url == "/")
             Url = "/index.html";
-        else if (Url.StartsWith("/api/") || Url.StartsWith(@"\api\"))
-            ApiRequest = true;
 
         int mimesIndex = GetSpecificIndex("Accept:", words);
         Mimes = words[mimesIndex + 1].Split(',');
-
-        int hostIndex = GetSpecificIndex("Host:", words);
-        Host = words[hostIndex + 1];
-
-        int cookieIndex = GetSpecificIndex("Cookie:", words);
-        if (cookieIndex != -1)
-        {
-            Cookie = words[cookieIndex + 1];
-            dataHandler.connection.Cookie = Cookie;
-        }
     }
 
     /// <summary>
