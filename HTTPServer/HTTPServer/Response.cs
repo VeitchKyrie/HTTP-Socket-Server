@@ -123,7 +123,7 @@ public class Response
                     stream.Write(bytedata, 0, bytedata.Length);
                 stream.Close();
 
-                Console.WriteLine("\nConnection ID: " + request.dataHandler.connection.ID + ", Thread ID:" + request.dataHandler.threadID + "\nRESPONSE:\n" + Header + "\nBytes sent to client.");
+                Console.WriteLine("\nRESPONSE:\n" + Header + "\nBytes sent to client.");
                 Console.WriteLine("________________________________________________________________");
             }
         }
@@ -134,8 +134,6 @@ public class Response
             Console.WriteLine("________________________________________________________________\n\n");
 
             Console.WriteLine("-FATAL ERROR-");
-            Console.WriteLine("Connection ID: " + request.dataHandler.connection.ID);
-            Console.WriteLine("Thread ID: " + request.dataHandler.threadID);
             Console.WriteLine("Requested file: " + request.Url);
             Console.WriteLine("Message: " + e.Message);
 

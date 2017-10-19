@@ -22,12 +22,6 @@ public class DataHandling
     string data;
 
     /// <summary>
-    /// The ID of this DataHandling instance in its ConnectionHandling instance.
-    /// (= If it's the first instance of its ConnectionHandling instance its 1, if second 2, etc)
-    /// </summary>
-    public uint threadID;
-
-    /// <summary>
     /// Constructor of the DataHandling class. Saves the parameters and starts a new Thread.
     /// </summary>
     /// <param name="data">The incoming data.</param>

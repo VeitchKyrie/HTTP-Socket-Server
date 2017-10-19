@@ -27,12 +27,7 @@ public class Request
     /// <summary>
     /// The DataHandling instance that created this instace.
     /// </summary>
-    public DataHandling dataHandler;
-
-    /// <summary>
-    /// The request's content. Can be empty.
-    /// </summary>
-    public string Content;
+    public DataHandling dataHandling;
 
     /// <summary>
     /// Request Constructor.
@@ -40,7 +35,7 @@ public class Request
     /// <param name="data">The incomed data.</param>
     public Request (string data, DataHandling dataHandling)
     {
-        this.dataHandler = dataHandling;
+        this.dataHandling = dataHandling;
         ProcessWords(GetWords(data));
     }
 
@@ -68,12 +63,10 @@ public class Request
             words = joinedArrays;
         }
 
-        Console.WriteLine("\nConnection ID: " + dataHandler.connection.ID + ", Thread ID: " + dataHandler.threadID + "\nREQUEST: ");
+        Console.WriteLine("\nREQUEST: ");
         Console.WriteLine(data);
         Console.WriteLine("\n________________________________________________________________");
 
-        string[] split = data.Split('\n');
-        Content = split[split.Length - 1];
         return words;
     }
 
@@ -87,18 +80,6 @@ public class Request
         {
             case "GET":
                 Type = RequestType.GET;
-                break;
-
-            case "POST":
-                Type = RequestType.POST;
-                break;
-
-            case "PUT":
-                Type = RequestType.PUT;
-                break;
-
-            case "DELETE":
-                Type = RequestType.DELETE;
                 break;
 
             default:
@@ -138,12 +119,5 @@ public class Request
 public enum RequestType
 {
     GET,
-    POST,
-    PUT,
-    DELETE,
-    //LINK,
-    //UNLINK,
-    //TRACE,
-    //OPTIONS,
     UNDEFINED
 }

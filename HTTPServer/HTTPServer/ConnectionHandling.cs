@@ -17,26 +17,15 @@ public class ConnectionHandling
     public Socket handler;
 
     /// <summary>
-    /// The connection ID
-    /// </summary>
-    public uint ID;
-
-    /// <summary>
-    /// The Thread that handles the Connection.
-    /// </summary>
-    Thread handleConnection;
-
-    /// <summary>
     /// The ConnectionHandling constructor.
     /// </summary>
     /// <param name="handler">The connected Socket</param>
     /// <param name="clientID">The ID of this instance</param>
-    public ConnectionHandling(Socket handler, uint clientID)
+    public ConnectionHandling(Socket handler)
     {
         this.handler = handler;
-        ID = clientID;
 
-        handleConnection = new Thread(HandleConnection);
+        Thread handleConnection = new Thread(HandleConnection);
         handleConnection.IsBackground = false;
         handleConnection.Start();
     }

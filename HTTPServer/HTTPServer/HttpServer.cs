@@ -13,7 +13,7 @@ public class HttpServer
     /// <summary>
     /// The server name.
     /// </summary>
-    public const string SERVER_NAME = "PascalServer";
+    public const string SERVER_NAME = "MrioServer";
 
     /// <summary>
     /// The used HTTP version.
@@ -29,11 +29,6 @@ public class HttpServer
     /// The root directory where all files can be found. (except for the error message files) 
     /// </summary>
     public const string WEB_D = "/root/web";
-
-    /// <summary>
-    /// The total amount of connections the server has dealt with.
-    /// </summary>
-    uint totalConnections = 0;
 
     /// <summary>
     /// The IP Adress used to create the localEndPoint.
@@ -108,13 +103,8 @@ public class HttpServer
     {
         while (true)
         {
-            Console.WriteLine("\nHandled Connections: " + totalConnections + " Waiting for a connection...");
-
             Socket handler = listener.Accept();
-
-            ConnectionHandling client = new ConnectionHandling(handler, totalConnections);
-
-            totalConnections++;
+            ConnectionHandling client = new ConnectionHandling(handler);
         }
     }
 }
